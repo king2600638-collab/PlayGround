@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PokéStrike — Catch 'Em All</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #111; font-family: 'Courier New', Courier, monospace; }
+  #canvas { display: block; width: 100%; height: 100%; background: linear-gradient(#87ceeb, #e0f7fa); }
+  #ui { position: absolute; inset: 0; pointer-events: none; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; }
+  .panel { pointer-events: auto; background: rgba(0,0,0,0.75); border: 4px solid #222; color: #fff; border-radius: 10px; padding: 10px 14px; max-width: 420px; box-shadow: 0 0 20px rgba(0,0,0,0.6); }
+  .panel.small { max-width: 300px; }
+  h1 { margin: 0 0 8px; font-size: 26px; letter-spacing: 4px; text-transform: uppercase; text-align: center; color: #ffd700; text-shadow: 2px 2px #000; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 15px; }
+  .bar { flex: 1; height: 10px; background: #333; border: 2px solid #000; border-radius: 5px; overflow: hidden; }
+  .bar-fill { height: 100%; width: 100%; background: #4ade80; transition: width .25s; }
+  .bar-fill.low { background: #f87171; }
+  .center { text-align: center; }
+  .btn-row { margin-top: 10px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  button { pointer-events: auto; background: #222; color: #0f0; border: 3px solid #0f0; border-radius: 6px; padding: 8px 14px; font: bold 14px 'Courier New', monospace; cursor: pointer; }
+  button:hover { background: #0f0; color: #000; }
+  button.secondary { border-color: #ffd700; color: #ffd700; }
+  button.secondary:hover { background: #ffd700; color: #000; }
+  button.danger { border-color: #f87171; color: #f87171; }
+  button.danger:hover { background: #f87171; color: #000; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .hint { color: #aaa; font-size: 12px; margin-top: 6px; text-align: center; }
+  .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; z-index: 30; text-align: center; }
+  .overlay.hidden { display: none; }
+  .overlay h2 { color: #ffd700; font-size: 40px; margin: 0 0 10px; text-shadow: 3px 3px #000; }
+  .overlay p { color: #ddd; font-size: 18px; margin: 6px 0; }
+  .creature-card { border: 3px solid #222; background: #1a1a1a; padding: 10px; margin: 8px 0; border-radius: 8px; display: flex; align-items: center; gap: 12px; }
+  .creature-sprite { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #555; background: #333; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .creature-info { flex: 1; }
+  .creature-name { font-weight: bold; font-size: 16px; }
+  .creature-type { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #ffd700; }
+  .shiny-badge { color: #ffd700; font-size: 12px; font-weight: bold; margin-left: 6px; }
+  #msg { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #fff; padding: 8px 16px; border: 3px solid #ffd700; border-radius: 8px; pointer-events: none; font-weight: bold; display: none; }
+  .touch { position: absolute; bottom: 16px; pointer-events: auto; display: flex; gap: 10px; justify-content: center; width: 100%; }
+  .dpad { display: grid; grid-template-columns: 64px 64px 64px; grid-template-rows: 64px 64px; gap: 8px; }
+  .dpad button { width: 60px; height: 60px; font-size: 24px; }
+  .dpad .up { grid-column: 2; grid-row: 1; }
+  .dpad .left { grid-column: 1; grid-row: 2; }
+  .dpad .down { grid-column: 2; grid-row: 2; }
+  .dpad .right { grid-column: 3; grid-row: 2; }
+  .act { display: flex; flex-direction: column; gap: 8px; }
+  .act button { width: 64px; height: 64px; border-radius: 50%; font-size: 24px; }
+  .touch-hint { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 13px; pointer-events: none; text-shadow: 1px 1px #000; }
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div id="ui">
+  <div class="panel small">
+    <div class="row">
+      <span>BALLS</span><span id="balls">0</span>
+    </div>
+    <div class="row center">
+      <div class="bar"><div class="bar-fill" id="hpBar" style="width:100%"></div></div>
+    </div>
+    <div class="row center">
+      <span id="hpText">HP 100/100</span>
+    </div>
+    <div class="row center">
+      <span id="zone">AREA 1</span>
+    </div>
+    <div class="hint">WASD/Arrows = Move &nbsp;•&nbsp; Mouse = Aim &nbsp;•&nbsp; Click = Strike &nbsp;•&nbsp; E = Throw Ball &nbsp;•&nbsp; P = Party</div>
+  </div>
+</div>
+
+<div id="msg"></div>
+
+<div id="start" class="overlay">
+  <h1>POKÉSTRIKE</h1>
+  <p style="color:#ffd700; font-weight:bold; font-size:22px; margin-bottom:14px;">Strike to weaken • Throw a ball to catch</p>
+  <div class="btn-row">
+    <button onclick="game.start()">START JOURNEY</button>
+    <button class="secondary" onclick="game.togglePokedex()">POKÉDEX</button>
+  </div>
+  <p class="hint">Shiny creatures sparkle (rare!) • Catch them all!</p>
+</div>
+
+<div id="party" class="overlay hidden">
+  <h2>PARTY</h2>
+  <div id="partyList"></div>
+  <div class="btn-row">
+    <button onclick="game.closeParty()">CLOSE</button>
+  </div>
+</div>
+
+<div id="pokedex" class="overlay hidden">
+  <h2>POKÉDEX</h2>
+  <div id="pokedexList"></div>
+  <div class="btn-row">
+    <button onclick="game.closePokedex()">CLOSE</button>
+  </div>
+</div>
+
+<div id="catch" class="overlay hidden">
+  <h2 id="catchTitle">GOTCHA!</h2>
+  <p id="catchMsg"></p>
+  <div class="btn-row">
+    <button onclick="game.closeCatch()">CONTINUE</button>
+  </div>
+</div>
+
+<div id="gameover" class="overlay hidden">
+  <h2>WHITE OUT</h2>
+  <p>Your creature fainted. Party healed at the center.</p>
+  <div class="btn-row">
+    <button onclick="game.respawn()">CONTINUE</button>
+  </div>
+</div>
+
+<div class="touch-hint" id="touchHint">Tap a creature to lock on • Strike to weaken</div>
+<div class="touch">
+  <div class="dpad">
+    <button class="up" onclick="game.input.touchDir(0,-1)">▲</button>
+    <button class="left" onclick="game.input.touchDir(-1,0)">◀</button>
+    <button class="down" onclick="game.input.touchDir(0,1)">▼</button>
+    <button class="right" onclick="game.input.touchDir(1,0)">▶</button>
+  </div>
+  <div class="act">
+    <button class="act" onclick="game.input.strike()">STRIKE</button>
+    <button class="act" onclick="game.input.throwBall()">BALL</button>
+  </div>
+</div>
+
+<script>
+/* ================= AUDIO (Web Audio, no external files) ================= */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const audio = new AudioCtx();
+const play = (type, freq, dur, vol=0.1) => {
+  if (audio.state === 'suspended') audio.resume();
+  const t = audio.currentTime;
+  const o = audio.createOscillator();
+  const g = audio.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(audio.destination);
+  o.start(t); o.stop(t + dur);
+};
+const sfx = {
+  shoot: () => play('square', 220, 0.08, 0.15),
+  hit: () => play('square', 110, 0.12, 0.2),
+  catchOpen: () => { play('sawtooth', 300, 0.1); setTimeout(()=>play('sawtooth', 600,0.15),80); },
+  catchShake: () => play('square', 150, 0.06, 0.2),
+  catchSuccess: () => { [523,659,784,1047].forEach((f,i)=>setTimeout(()=>play('square',f,0.2,0.15),i*110)); },
+  catchFail: () => { play('sawtooth', 180, 0.3, 0.2); setTimeout(()=>play('sawtooth',130,0.4,0.2),300); },
+  faint: () => { play('sawtooth', 220, 0.3, 0.25); setTimeout(()=>play('sawtooth',110,0.6,0.25),250); },
+  levelup: () => { [400,500,600,800].forEach((f,i)=>setTimeout(()=>play('square',f,0.15,0.15),i*90)); },
+  menu: () => play('triangle', 400, 0.05, 0.08),
+  warp: () => { for(let i=0;i<6;i++) setTimeout(()=>play('square',150+i*80,0.1,0.12), i*60); },
+};
+
+const shakeCtx = null;
+
+/* ================= GAME DATA ================= */
+const TILE = 40;
+const WORLD_W = 26;
+const WORLD_H = 20;
+const COLORS = {
+  fire:   '#ef4444',
+  water:  '#3b82f6',
+  grass:  '#22c55e',
+  electric:'#f59e0b',
+  rock:   '#9ca3af',
+  ghost:  '#a855f7',
+};
+const TYPE_EFF = {
+  fire:   { fire:0.5, water:0.5, grass:2.0, electric:1.0, rock:0.5, ghost:1.0 },
+  water:  { fire:2.0, water:0.5, grass:0.5, electric:1.0, rock:2.0, ghost:1.0 },
+  grass:  { fire:0.5, water:2.0, grass:0.5, electric:1.0, rock:1.0, ghost:1.0 },
+  electric:{fire:1.0,water:2.0,grass:0.5,electric:0.5,rock:1.0,ghost:1.0},
+  rock:   { fire:2.0, water:1.0, grass:1.0, electric:1.0, rock:0.5, ghost:1.0 },
+  ghost:  { fire:1.0, water:1.0, grass:1.0, electric:1.0, rock:1.0, ghost:2.0 },
+};
+
+const SPECIES = [
+  { id:'ember',   name:'Ember',   type:'fire',   baseHp:42,  atk:9,  ballRate:0.20, emoji:'🔥', hue:0,   rare:0.02 },
+  { id:'splash',  name:'Splash',  type:'water',  baseHp:52,  atk:8,  ballRate:0.22, emoji:'💧', hue:195, rare:0.02 },
+  { id:'vine',    name:'Vine',    type:'grass',  baseHp:48,  atk:7,  ballRate:0.24, emoji:'🌿', hue:110, rare:0.02 },
+  { id:'zap',     name:'Zap',     type:'electric',baseHp:40, atk:11, ballRate:0.18, emoji:'⚡', hue:45, rare:0.02 },
+  { id:'stone',   name:'Stone',   type:'rock',   baseHp:64,  atk:7,  ballRate:0.14, emoji:'🪨', hue:40, rare:0.02 },
+  { id:'shade',   name:'Shade',   type:'ghost',  baseHp:36,  atk:10, ballRate:0.12, emoji:'👻', hue:280, rare:0.02 },
+];
+const SPECIES_BY_ID = Object.fromEntries(SPECIES.map(s=>[s.id,s]));
+
+const PARTY_MAX = 6;
+
+function rand(min,max){ return Math.random()*(max-min)+min; }
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
+
+function makeCreature(specId, level, shiny){
+  const s = SPECIES_BY_ID[specId];
+  const hp = Math.floor(s.baseHp * (0.9 + level*0.25));
+  return {
+    id: specId + '-' + Date.now() + '-' + Math.floor(Math.random()*10000),
+    specId, name: s.name, type: s.type, level: level || 1,
+    maxHp: hp, hp: hp, atk: s.atk + Math.floor(level*0.5),
+    ballRate: s.ballRate, emoji: s.emoji, hue: s.hue,
+    shiny: shiny || false, caughtAt: Date.now(),
+    xp: 0, xpNext: 50,
+  };
+}
+
+function typeEffectiveness(atkType, defType){
+  return TYPE_EFF[atkType] && TYPE_EFF[atkType][defType] !== undefined ? TYPE_EFF[atkType][defType] : 1;
+}
+
+/* ================= GAME ================= */
+const game = {
+  canvas: null, ctx: null, w: 0, h: 0,
+  running: false, started: false,
+  player: null,
+  camera: {x:0,y:0},
+  particles: [], texts: [], projectiles: [],
+  creatures: [], balls: [],
+  party: [], box: [],
+  msgQueue: [], msgTimer: 0,
+  activeCreature: null, // player's lead creature in party
+  encTarget: null,      // wild creature currently targeted
+  encTimer: 0,
+  ballsCount: 5,
+  money: 0,
+  caughtIds: new Set(),
+  lastTime: 0,
+
+  init(){
+    this.canvas = document.getElementById('canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.resize();
+    window.addEventListener('resize', ()=>this.resize());
+    this.input = new Input(this);
+    this.world = new World(this);
+    this.loop = this.loop.bind(this);
+    this.lastTime = performance.now();
+    requestAnimationFrame(this.loop);
+  },
+  resize(){
+    this.w = this.canvas.width = this.canvas.clientWidth;
+    this.h = this.canvas.height = this.canvas.clientHeight;
+  },
+
+  start(){
+    this.started = true;
+    this.running = true;
+    this.resetGame();
+    document.getElementById('start').classList.add('hidden');
+    this.msg('Wild creatures roam the area! Strike them to weaken, then throw a ball to catch.');
+    sfx.warp();
+  },
+  resetGame(){
+    this.player = {x:TILE*3, y:TILE*3, vx:0, vy:0, angle:0, hp:100, maxHp:100, inv:0, dir:{x:1,y:0}};
+    this.camera = {x:0,y:0};
+    this.particles=[]; this.texts=[]; this.projectiles=[]; this.creatures=[]; this.balls=[];
+    this.party=[]; this.box=[]; this.ballsCount=5; this.money=0; this.caughtIds=new Set();
+    this.activeCreature=null; this.encTarget=null; this.encTimer=0;
+    this.world.generate();
+    // starter
+    const c = makeCreature('ember', 1, Math.random()<0.05);
+    this.party.push(c);
+    this.activeCreature = c;
+    this.caughtIds.add('ember');
+    this.spawnWild(6);
+  },
+
+  spawnWild(n){
+    for(let i=0;i<n;i++){
+      const spec = SPECIES[randInt(0,SPECIES.length-1)];
+      const shiny = Math.random() < spec.rare;
+      const level = randInt(1,3);
+      const c = makeCreature(spec.id, level, shiny);
+      c.x = rand(TILE*2, TILE*(WORLD_W-2));
+      c.y = rand(TILE*2, TILE*(WORLD_H-2));
+      // avoid player
+      if(dist(c,this.player)<TILE*4){ c.x+=TILE*4; c.y+=TILE*4; }
+      c.vx = rand(-0.8,0.8); c.vy = rand(-0.8,0.8);
+      c.hp = c.maxHp;
+      c.state = 'wander'; c.wanderT = 0; c.aggT = 0;
+      c.target = null;
+      this.creatures.push(c);
+    }
+  },
+
+  loop(now){
+    const dt = Math.min((now-this.lastTime)/1000, 0.05);
+    this.lastTime = now;
+    if(this.running) this.update(dt);
+    this.draw();
+    requestAnimationFrame(this.loop);
+  },
+
+  update(dt){
+    this.input.update(dt);
+    this.updatePlayer(dt);
+    this.updateCreatures(dt);
+    this.updateProjectiles(dt);
+    this.updateBalls(dt);
+    this.updateParticles(dt);
+    this.updateTexts(dt);
+    this.updateCamera(dt);
+    if(this.msgTimer>0){ this.msgTimer-=dt; if(this.msgTimer<=0) document.getElementById('msg').style.display='none'; }
+    this.updateHud();
+  },
+
+  updatePlayer(dt){
+    const p = this.player;
+    const spd = 150;
+    let ax=0, ay=0;
+    if(this.input.keys.ArrowUp || this.input.keys.KeyW) ay=-1;
+    if(this.input.keys.ArrowDown || this.input.keys.KeyS) ay=1;
+    if(this.input.keys.ArrowLeft || this.input.keys.KeyA) ax=-1;
+    if(this.input.keys.ArrowRight || this.input.keys.KeyD) ax=1;
+    if(ax!==0 || ay!==0){
+      const len = Math.hypot(ax,ay); ax/=len; ay/=len;
+      p.vx = ax*spd; p.vy = ay*spd;
+      p.dir = {x:ax,y:ay};
+    } else {
+      p.vx *= 0.82; p.vy *= 0.82;
+      if(Math.abs(p.vx)<1) p.vx=0; if(Math.abs(p.vy)<1) p.vy=0;
+    }
+    // aim at mouse
+    if(this.input.mouse){
+      p.angle = Math.atan2(this.input.mouse.y - (this.h/2), this.input.mouse.x - (this.w/2));
+    }
+    // move
+    let nx = p.x + p.vx*dt, ny = p.y + p.vy*dt;
+    if(!this.world.solid(nx, ny, p)){ p.x=nx; p.y=ny; }
+    else if(!this.world.solid(nx, p.y, p)){ p.x=nx; }
+    else if(!this.world.solid(p.x, ny, p)){ p.y=ny; }
+    // world bounds
+    p.x = clamp(p.x, 10, TILE*WORLD_W-10);
+    p.y = clamp(p.y, 10, TILE*WORLD_H-10);
+    // player vs creature contact damage
+    if(p.inv>0) p.inv-=dt;
+    for(let c of this.creatures){
+      if(c.hp<=0) continue;
+      if(dist(p,c) < TILE*0.55){
+        if(p.inv<=0){
+          const dmg = Math.max(1, c.atk - 2);
+          this.hurtPlayer(dmg);
+          // knockback
+          const ang = Math.atan2(p.y-c.y, p.x-c.x);
+          p.x += Math.cos(ang)*40; p.y += Math.sin(ang)*40;
+          p.inv = 1.2;
+          this.addText(p.x, p.y-20, '-' + dmg, '#f87171');
+        }
+      }
+    }
+  },
+  hurtPlayer(dmg){
+    this.player.hp = Math.max(0, this.player.hp - dmg);
+    sfx.hit();
+    this.addText(this.player.x, this.player.y-30, '-'+dmg, '#f87171');
+    this.updateHud();
+    if(this.player.hp<=0){
+      this.whiteOut();
+    }
+  },
+  whiteOut(){
+    sfx.faint();
+    document.getElementById('gameover').classList.remove('hidden');
+    this.running = false;
+    // heal party
+    for(let c of this.party){ c.hp = c.maxHp; }
+  },
+  respawn(){
+    document.getElementById('gameover').classList.add('hidden');
+    this.player.x = TILE*3; this.player.y = TILE*3;
+    this.player.hp = this.player.maxHp;
+    this.running = true;
+    this.updateHud();
+    this.msg('Party healed at the Poké Center.');
+  },
+
+  updateCreatures(dt){
+    for(let c of this.creatures){
+      if(c.hp<=0){
+        // fade out fainted
+        c.alpha = (c.alpha===undefined)?1:Math.max(0,c.alpha-dt*1.5);
+        if(c.alpha<=0) c.hp = -1;
+        continue;
+      }
+      // target player if close
+      const d = dist(c, this.player);
+      const aggroRange = TILE*5;
+      if(d < aggroRange && c.state !== 'faint'){
+        c.state = 'chase';
+      }
+      if(c.state === 'wander'){
+        c.wanderT -= dt;
+        if(c.wanderT <= 0){
+          c.vx = rand(-1.2,1.2); c.vy = rand(-1.2,1.2);
+          c.wanderT = rand(1.5,4);
+        }
+        c.x += c.vx*30*dt; c.y += c.vy*30*dt;
+      } else if(c.state === 'chase'){
+        const ang = Math.atan2(this.player.y-c.y, this.player.x-c.x);
+        c.vx = Math.cos(ang)*70; c.vy = Math.sin(ang)*70;
+        c.x += c.vx*dt; c.y += c.vy*dt;
+        // strike player periodically
+        if(dist(c,this.player) < TILE*0.6 && c.atkT<=0){
+          this.hurtPlayer(Math.max(1,c.atk-2));
+          c.atkT = 1.4;
+          sfx.hit();
+          const ang2 = Math.atan2(this.player.y-c.y, this.player.x-c.x);
+          this.player.x += Math.cos(ang2)*30; this.player.y += Math.sin(ang2)*30;
+        }
+        if(c.atkT>0) c.atkT-=dt;
+      }
+      c.x = clamp(c.x, 10, TILE*WORLD_W-10);
+      c.y = clamp(c.y, 10, TILE*WORLD_H-10);
+      // world wrap-ish bounce off solids
+      if(this.world.solid(c.x, c.y, c)){
+        c.x -= c.vx*dt*2; c.y -= c.vy*dt*2;
+        c.vx *= -0.6; c.vy *= -0.6;
+      }
+    }
+    // respawn fainted / refill
+    const alive = this.creatures.filter(c=>c.hp>0 && c.alpha!==0 && c.hp!==-1).length;
+    if(alive < 4 && Math.random() < dt*0.6){
+      this.spawnWild(1);
+    }
+  },
+
+  updateProjectiles(dt){
+    for(let i=this.projectiles.length-1;i>=0;i--){
+      const pr = this.projectiles[i];
+      pr.x += pr.vx*dt; pr.y += pr.vy*dt;
+      pr.life -= dt;
+      if(pr.life<=0){ this.projectiles.splice(i,1); continue; }
+      // hit creature
+      let hit = false;
+      for(let c of this.creatures){
+        if(c.hp<=0) continue;
+        if(dist(pr,c) < TILE*0.5){
+          this.damageCreature(c, pr.dmg, pr.fromPlayer);
+          this.addParticle(c.x, c.y, '#ffd700', 6);
+          hit = true; break;
+        }
+      }
+      // hit wall
+      if(!hit && this.world.solid(pr.x, pr.y, null)){
+        this.addParticle(pr.x, pr.y, '#bbb', 4);
+        hit = true;
+      }
+      if(hit){ this.projectiles.splice(i,1); }
+    }
+  },
+  damageCreature(c, dmg, fromPlayer){
+    c.hp = Math.max(0, c.hp - dmg);
+    sfx.hit();
+    this.addText(c.x, c.y-16, '-'+dmg, '#fff');
+    this.addParticle(c.x, c.y, '#ef4444', 5);
+    if(c.hp<=0){
+      c.hp = 0;
+      c.state='faint';
+      sfx.faint();
+      if(fromPlayer){
+        this.money += 5;
+        this.addText(c.x, c.y-30, '+5 ₽', '#fbbf24');
+      }
+    }
+  },
+
+  updateBalls(dt){
+    for(let i=this.balls.length-1;i>=0;i--){
+      const b = this.balls[i];
+      if(b.state === 'fly'){
+        b.x += b.vx*dt; b.y += b.vy*dt;
+        b.life -= dt;
+        if(b.life<=0){ b.state='land'; b.landT=0; b.x = clamp(b.x,10,TILE*WORLD_W-10); b.y=clamp(b.y,10,TILE*WORLD_H-10); }
+        // hit creature on the way
+        for(let c of this.creatures){
+          if(c.hp<=0) continue;
+          if(dist(b,c) < TILE*0.55){
+            this.attemptCatch(b, c);
+            break;
+          }
+        }
+      } else if(b.state === 'land'){
+        b.landT += dt;
+        if(b.landT >= 0.4){
+          // landed on ground, find nearest creature to target or just vanish
+          let target=null, bd=1e9;
+          for(let c of this.creatures){
+            if(c.hp<=0) continue;
+            const dd = dist(b,c);
+            if(dd<bd){ bd=dd; target=c; }
+          }
+          if(target && bd < TILE*2.5){
+            this.attemptCatch(b, target);
+          } else {
+            this.balls.splice(i,1);
+          }
+        }
+      }
+    }
+  },
+  attemptCatch(ball, c){
+    this.balls.splice(this.balls.indexOf(ball),1);
+    this.encTarget = c;
+    document.getElementById('catch').classList.remove('hidden');
+    const hpRatio = c.hp / c.maxHp;
+    const base = c.ballRate;
+    // lower HP = higher catch
+    let chance = base * (1 - hpRatio*0.7);
+    if(c.statusWeakened) chance *= 1.5;
+    const title = document.getElementById('catchTitle');
+    const msg = document.getElementById('catchMsg');
+    sfx.catchOpen();
+    let shakes = 0;
+    const doShake = ()=>{
+      sfx.catchShake();
+      shakes++;
+      if(shakes < 3 && Math.random() < chance){
+        setTimeout(doShake, 260);
+      } else {
+        setTimeout(()=>{
+          if(Math.random() < chance){
+            this.catchSuccess(c);
+          } else {
+            this.catchFail(c);
+          }
+        }, 260);
+      }
+    };
+    setTimeout(doShake, 100);
+  },
+  catchSuccess(c){
+    sfx.catchSuccess();
+    document.getElementById('catchTitle').textContent = 'GOTCHA!';
+    document.getElementById('catchMsg').textContent = c.name + (c.shiny?' — SHINY!':'') + ' joined the party!';
+    this.caughtIds.add(c.specId);
+    if(this.party.length < PARTY_MAX){
+      c.hp = c.maxHp;
+      c.xp = 0;
+      this.party.push(c);
+      if(!this.activeCreature) this.activeCreature = c;
+    } else {
+      this.box.push(c);
+      document.getElementById('catchMsg').textContent += ' (sent to Box)';
+    }
+    c.hp = -1; // remove
+    this.encTarget = null;
+    this.ballsCount++;
+    this.money += 20;
+    this.updateHud();
+  },
+  catchFail(c){
+    sfx.catchFail();
+    document.getElementById('catchTitle').textContent = 'OH NO!';
+    document.getElementById('catchMsg').textContent = c.name + ' broke free!';
+    c.hp = Math.min(c.maxHp, c.hp + 5); // recover a bit
+    this.encTarget = null;
+    this.updateHud();
+  },
+
+  throwBall(){
+    if(!this.running) return;
+    if(this.ballsCount<=0){ this.msg('No Poké Balls!'); return; }
+    const p = this.player;
+    // target nearest creature or aim direction
+    let target=null, bd=1e9;
+    for(let c of this.creatures){
+      if(c.hp<=0) continue;
+      const dd = dist(p,c);
+      if(dd<bd){ bd=dd; target=c; }
+    }
+    const ang = target ? Math.atan2(target.y-p.y, target.x-p.x) : p.angle;
+    const b = {x:p.x, y:p.y, vx:Math.cos(ang)*140, vy:Math.sin(ang)*140, life:2.2, state:'fly', landT:0};
+    this.balls.push(b);
+    this.ballsCount--;
+    sfx.catchOpen();
+    this.updateHud();
+    this.msg('Threw a Poké Ball!');
+  },
+  strike(){
+    if(!this.running) return;
+    const p = this.player;
+    const ang = p.angle;
+    const pr = {x:p.x+Math.cos(ang)*28, y:p.y+Math.sin(ang)*28, vx:Math.cos(ang)*260, vy:Math.sin(ang)*260, life:0.5, dmg:18, fromPlayer:true};
+    this.projectiles.push(pr);
+    sfx.shoot();
+    this.addParticle(p.x, p.y, '#fff', 3);
+    // recoil
+    p.x -= Math.cos(ang)*10; p.y -= Math.sin(ang)*10;
+  },
+
+  updateParticles(dt){
+    for(let i=this.particles.length-1;i>=0;i--){
+      const p = this.particles[i];
+      p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt; p.vx*=0.92; p.vy*=0.92;
+      if(p.life<=0) this.particles.splice(i,1);
+    }
+  },
+  updateTexts(dt){
+    for(let i=this.texts.length-1;i>=0;i--){
+      const t=this.texts[i]; t.y-=40*dt; t.life-=dt; t.alpha=Math.max(0,t.life);
+      if(t.life<=0) this.texts.splice(i,1);
+    }
+  },
+  updateCamera(dt){
+    const p=this.player;
+    this.camera.x += (p.x - this.w/2 - this.camera.x)*dt*6;
+    this.camera.y += (p.y - this.h/2 - this.camera.y)*dt*6;
+  },
+  updateHud(){
+    document.getElementById('balls').textContent = this.ballsCount;
+    const p=this.player;
+    const hpEl=document.getElementById('hpBar'), hpText=document.getElementById('hpText');
+    const ratio = p.hp/p.maxHp;
+    hpEl.style.width = (ratio*100)+'%';
+    hpEl.className = 'bar-fill' + (ratio<0.3?' low':'');
+    hpText.textContent = `HP ${Math.ceil(p.hp)}/${p.maxHp}`;
+  },
+  addText(x,y,text,color){ this.texts.push({x,y,text,color,life:1.2,alpha:1}); },
+  addParticle(x,y,color,count){
+    for(let i=0;i<count;i++){
+      this.particles.push({x,y,vx:rand(-60,60),vy:rand(-60,60),life:rand(0.25,0.6),color});
+    }
+  },
+  msg(text, t=2.5){
+    const el=document.getElementById('msg');
+    el.textContent=text; el.style.display='block';
+    this.msgTimer=t;
+  },
+
+  togglePokedex(){ if(document.getElementById('pokedex').classList.contains('hidden')) this.openPokedex(); else this.closePokedex(); },
+  openPokedex(){
+    sfx.menu();
+    const list=document.getElementById('pokedexList');
+    list.innerHTML='';
+    SPECIES.forEach(s=>{
+      const div=document.createElement('div');
+      div.className='creature-card';
+      const caught = this.caughtIds.has(s.id);
+      div.innerHTML = `<div class="creature-sprite">${caught?(s.shiny?'✨':'')+s.emoji:'❓'}</div>
+        <div class="creature-info">
+          <div class="creature-name">${caught?s.name:'???'}</div>
+          <div class="creature-type">${s.type}${caught?'':' — ???'}</div>
+        </div>
+        ${caught?'<span class="shiny-badge">CAUGHT</span>':''}`;
+      list.appendChild(div);
+    });
+    document.getElementById('pokedex').classList.remove('hidden');
+    this.running=false;
+  },
+  closePokedex(){ sfx.menu(); document.getElementById('pokedex').classList.add('hidden'); this.running=true; },
+  toggleParty(){ if(document.getElementById('party').classList.contains('hidden')) this.openParty(); else this.closeParty(); },
+  openParty(){
+    sfx.menu();
+    const list=document.getElementById('partyList');
+    list.innerHTML='';
+    this.party.forEach((c,idx)=>{
+      const active = this.activeCreature===c;
+      const div=document.createElement('div');
+      div.className='creature-card'+(active?' active':'');
+      const eff = (t)=>{ const v=TYPE_EFF[c.type][t]; return v>1?'strong': v<1?'weak':'neutral'; };
+      div.innerHTML = `
+        <div class="creature-sprite" style="color:${c.shiny?'#ffd700':COLORS[c.type]}">${c.emoji}${c.shiny?' ✨':''}</div>
+        <div class="creature-info">
+          <div class="creature-name">${c.name} Lv.${c.level} ${c.shiny?'<span class="shiny-badge">SHINY</span>':''}</div>
+          <div class="creature-type">${c.type}</div>
+          <div class="bar" style="margin-top:4px;"><div class="bar-fill" style="width:${(c.hp/c.maxHp)*100}%"></div></div>
+          <div style="font-size:11px;color:#888">HP ${Math.ceil(c.hp)}/${c.maxHp} • ATK ${c.atk}</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="secondary" onclick="game.setActive(${idx})">${active?'ACTIVE':'SET'}</button>
+          ${this.party.length>1?'<button class="danger" onclick="game.release(${idx})">RELEASE</button>':''}
+        </div>
+      `;
+      list.appendChild(div);
+    });
+    document.getElementById('party').classList.remove('hidden');
+    this.running=false;
+  },
+  closeParty(){ sfx.menu(); document.getElementById('party').classList.add('hidden'); this.running=true; this.updateHud(); },
+  setActive(idx){ this.activeCreature=this.party[idx]; sfx.levelup(); this.msg(this.activeCreature.name+' set as active!'); this.openParty(); },
+  release(idx){
+    if(this.party.length<=1) return;
+    const c=this.party.splice(idx,1)[0];
+    if(this.activeCreature===c) this.activeCreature=this.party[0];
+    this.msg(c.name+' was released.');
+    sfx.menu();
+    this.openParty();
+  },
+  closeCatch(){ sfx.menu(); document.getElementById('catch').classList.add('hidden'); this.running=true; },
+  draw(){
+    const c=this.ctx; c.clearRect(0,0,this.w,this.h);
+    if(!this.player) return;
+    c.save();
+    c.translate(-this.camera.x, -this.camera.y);
+    this.world.draw(c);
+    // projectiles
+    for(let pr of this.projectiles){
+      c.fillStyle='#ffd700'; c.beginPath(); c.arc(pr.x,pr.y,4,0,Math.PI*2); c.fill();
+    }
+    // balls
+    for(let b of this.balls){
+      c.fillStyle = b.state==='fly'?'#fff':'#ffd700';
+      c.beginPath(); c.arc(b.x,b.y,7,0,Math.PI*2); c.fill();
+      c.strokeStyle='#333'; c.lineWidth=2; c.stroke();
+    }
+    // creatures
+    for(let c2 of this.creatures){
+      if(c2.hp<0 && (c2.alpha===0 || c2.alpha===undefined)) continue;
+      if(c2.hp<=0 && c2.alpha!==undefined){
+        c.globalAlpha = c2.alpha;
+      }
+      this.drawCreature(c, c2);
+      c.globalAlpha = 1;
+      // hp bar above wild creatures
+      if(c2.hp>0){
+        const barW=40, barH=6;
+        const ratio=c2.hp/c2.maxHp;
+        c.fillStyle='#222'; c.fillRect(c2.x-barW/2, c2.y-34, barW, barH);
+        c.fillStyle = ratio<0.3?'#f87171':'#4ade80';
+        c.fillRect(c2.x-barW/2, c2.y-34, barW*ratio, barH);
+        c.strokeStyle='#000'; c.lineWidth=1; c.strokeRect(c2.x-barW/2, c2.y-34, barW, barH);
+        // target indicator
+        if(this.encTarget===c2){
+          c.strokeStyle='#ffd700'; c.lineWidth=2; c.beginPath(); c.arc(c2.x, c2.y-42, 14, 0, Math.PI*2); c.stroke();
+        }
+      }
+    }
+    // player
+    const p=this.player;
+    if(p.inv<=0 || Math.floor(Date.now()/80)%2){
+      c.fillStyle='#fff';
+      c.beginPath(); c.arc(p.x,p.y,11,0,Math.PI*2); c.fill();
+      c.strokeStyle='#222'; c.lineWidth=2; c.stroke();
+      // aim line
+      c.strokeStyle='rgba(255,215,0,0.5)'; c.lineWidth=2; c.beginPath();
+      c.moveTo(p.x,p.y); c.lineTo(p.x+Math.cos(p.angle)*28, p.y+Math.sin(p.angle)*28); c.stroke();
+    }
+    // active creature follows player
+    if(this.activeCreature && this.activeCreature.hp>0){
+      const ac=this.activeCreature;
+      const offAng = Date.now()/1000;
+      const ax = p.x + Math.cos(offAng+idxOf(this.party,ac))*34;
+      const ay = p.y + Math.sin(offAng+idxOf(this.party,ac))*34;
+      this.drawCreature(c, ac, ax, ay, 14);
+      c.fillStyle='rgba(0,0,0,0.6)'; c.fillRect(ax-20, ay-26, 40, 6);
+      c.fillStyle='#4ade80'; c.fillRect(ax-20, ay-26, 40*(ac.hp/ac.maxHp), 6);
+    }
+    c.restore();
+
+    // draw particles & floating texts in world coords under camera
+    c.save(); c.translate(-this.camera.x,-this.camera.y);
+    for(let p2 of this.particles){
+      c.globalAlpha=p2.life; c.fillStyle=p2.color;
+      c.beginPath(); c.arc(p2.x,p2.y,3,0,Math.PI*2); c.fill();
+    }
+    c.globalAlpha=1;
+    for(let t of this.texts){
+      c.globalAlpha=t.alpha; c.fillStyle=t.color; c.font='bold 14px Courier New';
+      c.fillText(t.text, t.x- (c.measureText(t.text).width/2), t.y);
+    }
+    c.restore();
+
+    // damage flash overlay
+    if(this.player.inv>0){
+      c.fillStyle='rgba(255,0,0,0.25)'; c.fillRect(0,0,this.w,this.h);
+    }
+  },
+  drawCreature(c, cr, cx, cy, size){
+    cx = cx===undefined?cr.x:cx; cy = cy===undefined?cr.y:cy; size=size||20;
+    const isShiny = cr.shiny;
+    c.save();
+    c.translate(cx, cy);
+    // shine sparkles
+    if(isShiny){
+      for(let s=0;s<3;s++){
+        const a=(Date.now()/200+s)*0.7;
+        c.fillStyle='#ffd700';
+        c.beginPath(); c.arc(Math.cos(a)*(size+10+s*6), Math.sin(a)*(size+10+s*6), 2+s, 0, Math.PI*2); c.fill();
+      }
+    }
+    // body color
+    c.fillStyle = isShiny ? '#ffd700' : COLORS[cr.type];
+    c.beginPath(); c.arc(0,0,size,0,Math.PI*2); c.fill();
+    c.strokeStyle='rgba(0,0,0,0.4)'; c.lineWidth=2; c.stroke();
+    // face
+    c.fillStyle='#fff'; c.beginPath(); c.arc(-size*0.35,-size*0.25,size*0.22,0,Math.PI*2); c.fill();
+    c.beginPath(); c.arc(size*0.35,-size*0.25,size*0.22,0,Math.PI*2); c.fill();
+    c.fillStyle='#000'; c.beginPath(); c.arc(-size*0.35,-size*0.25,size*0.11,0,Math.PI*2); c.fill();
+    c.beginPath(); c.arc(size*0.35,-size*0.25,size*0.11,0,Math.PI*2); c.fill();
+    c.fillStyle='#ff4444'; c.beginPath(); c.arc(0,size*0.15,size*0.28,0,Math.PI); c.fill();
+    // type badge
+    c.fillStyle = isShiny?'#000':COLORS[cr.type];
+    c.fillRect(-size*0.55, size+4, size*0.5, size*0.45);
+    c.fillStyle='#fff'; c.font=`bold ${Math.max(8,size*0.4)}px Courier New`; c.textAlign='center';
+    c.fillText(cr.type.toUpperCase()[0], 0, size+4+size*0.32);
+    c.textAlign='start';
+    c.restore();
+  },
+};
+
+function idxOf(arr, el){ for(let i=0;i<arr.length;i++) if(arr[i]===el) return i; return -1; }
+
+/* ================= WORLD ================= */
+class World{
+  constructor(g){ this.g=g; this.cells=[]; this.objs=[]; }
+  generate(){
+    this.cells=[]; this.objs=[];
+    for(let y=0;y<WORLD_H;y++){
+      this.cells[y]=[];
+      for(let x=0;x<WORLD_W;x++) this.cells[y][x]=0;
+    }
+    // grass patches
+    for(let i=0;i<14;i++){
+      const cx=randInt(2,WORLD_W-3), cy=randInt(2,WORLD_H-3);
+      const r=randInt(2,4);
+      for(let dy=-r;dy<=r;dy++) for(let dx=-r;dx<=r;dx++){
+        if(Math.hypot(dx,dy)<=r && cx+dx>=0 && cx+dx<WORLD_W && cy+dy>=0 && cy+dy<WORLD_H){
+          this.cells[cy+dy][cx+dx]=1; // grass
+        }
+      }
+    }
+    // rocks (solid)
+    for(let i=0;i<22;i++){
+      const x=randInt(1,WORLD_W-2), y=randInt(1,WORLD_H-2);
+      if(this.cells[y][x]!==1 && dist({x:x*TILE,y:y*TILE},{x:TILE*3,y:TILE*3})>TILE*4){
+        this.cells[y][x]=2; // rock
+        this.objs.push({x:x*TILE+TILE/2,y:y*TILE+TILE/2,r:TILE*0.42,type:'rock'});
+      }
+    }
+    // trees (solid, bigger)
+    for(let i=0;i<14;i++){
+      const x=randInt(1,WORLD_W-2), y=randInt(1,WORLD_H-2);
+      if(this.cells[y][x]!==1 && this.cells[y][x]!==2 && dist({x:x*TILE,y:y*TILE},{x:TILE*3,y:TILE*3})>TILE*5){
+        this.cells[y][x]=3;
+        this.objs.push({x:x*TILE+TILE/2,y:y*TILE+TILE/2,r:TILE*0.5,type:'tree'});
+      }
+    }
+    // water (solid-ish, slow) - small ponds
+    for(let i=0;i<8;i++){
+      const cx=randInt(3,WORLD_W-4), cy=randInt(3,WORLD_H-4);
+      const r=randInt(1,2);
+      for(let dy=-r;dy<=r;dy++) for(let dx=-r;dx<=r;dx++){
+        if(cx+dx>=0&&cx+dx<WORLD_W&&cy+dy>=0&&cy+dy<WORLD_H && this.cells[cy+dy][cx+dx]===0){
+          this.cells[cy+dy][cx+dx]=4; // water
+        }
+      }
+    }
+  }
+  solid(wx, wy, ent){
+    const gx = Math.floor(wx/TILE), gy=Math.floor(wy/TILE);
+    if(gx<0||gx>=WORLD_W||gy<0||gy>=WORLD_H) return true;
+    const t = this.cells[gy][gx];
+    return t===2 || t===3; // rock/tree solid
+  }
+  draw(c){
+    const gw = Math.ceil(this.g.w/TILE)+1, gh = Math.ceil(this.g.h/TILE)+1;
+    const ox = Math.floor(this.g.camera.x/TILE), oy = Math.floor(this.g.camera.y/TILE);
+    for(let dy=-1;dy<=gh;dy++){
+      for(let dx=-1;dx<=gw;dx++){
+        const gx=ox+dx, gy=oy+dy;
+        if(gx<0||gx>=WORLD_W||gy<0||gy>=WORLD_H) continue;
+        const row=this.cells[gy];
+        if(!row) continue;
+        const t=row[gx];
+        if(t===undefined) continue;
+        const x=gx*TILE, y=gy*TILE;
+        if(t===0) c.fillStyle='#b7e4c7'; // grass light
+        else if(t===1) c.fillStyle='#7cb342'; // grass patch
+        else if(t===2) c.fillStyle='#9e9e9e'; // rock
+        else if(t===3) c.fillStyle='#5d4037'; // tree
+        else if(t===4) c.fillStyle='#4fc3f7'; // water
+        c.fillRect(x,y,TILE,TILE);
+        // details
+        if(t===2){ c.fillStyle='#757575'; c.beginPath(); c.arc(x+TILE/2,y+TILE/2,TILE*0.32,0,Math.PI*2); c.fill(); }
+        if(t===3){ c.fillStyle='#4e342e'; c.beginPath(); c.arc(x+TILE/2,y+TILE/2-4,TILE*0.3,0,Math.PI*2); c.fill(); c.fillStyle='#651fff'; c.fillRect(x+TILE/2-2,y+TILE/2+2,4,10); }
+        if(t===4){ c.fillStyle='#29b6f6'; c.globalAlpha=0.5; c.beginPath(); c.arc(x+TILE/3,y+TILE/3,TILE*0.2,0,Math.PI*2); c.fill(); c.globalAlpha=1; }
+        if(t===1){ c.fillStyle='#689f38'; c.globalAlpha=0.5; c.beginPath(); c.arc(x+TILE/2,y+TILE/2,TILE*0.22,0,Math.PI*2); c.fill(); c.globalAlpha=1; }
+        // grid subtle
+        c.strokeStyle='rgba(0,0,0,0.06)'; c.lineWidth=1; c.strokeRect(x,y,TILE,TILE);
+      }
+    }
+  }
+}
+
+/* ================= INPUT ================= */
+class Input{
+  constructor(g){ this.g=g; this.keys={}; this.mouse=null; this.touchDir=(dx,dy)=>{}; this.strike=()=>{}; this.throwBall=()=>{}; this.bind(); }
+  bind(){
+    window.addEventListener('keydown', e=>{ this.keys[e.code]=true; if(e.code==='KeyE'){ this.g.throwBall(); } if(e.code==='KeyP'){ this.g.toggleParty(); } });
+    window.addEventListener('keyup', e=>{ this.keys[e.code]=false; });
+    window.addEventListener('mousedown', e=>{ if(e.button===0) this.g.strike(); if(e.button===2){ e.preventDefault(); this.g.throwBall(); } });
+    window.addEventListener('mousemove', e=>{
+      const r=this.g.canvas.getBoundingClientRect();
+      this.mouse={x:e.clientX-r.left,y:e.clientY-r.top};
+    });
+    window.addEventListener('contextmenu', e=>e.preventDefault());
+    // touch: canvas tap = strike at touch point, hold/second finger = ball
+    this.g.canvas.addEventListener('touchstart', e=>{
+      e.preventDefault();
+      const r=this.g.canvas.getBoundingClientRect();
+      const t=e.changedTouches[0];
+      const x=t.clientX-r.left, y=t.clientY-r.top;
+      const p=this.g.player;
+      const ang=Math.atan2(y-(this.g.h/2), x-(this.g.w/2));
+      p.angle=ang;
+      this.g.strike();
+    }, {passive:false});
+  }
+  update(dt){}
+}
+
+/* ================= BOOT ================= */
+document.addEventListener('DOMContentLoaded', ()=>{
+  game.init();
+  window.game = game;
+});
+
+</script>
+</body>
+</html>
