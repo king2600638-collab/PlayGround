@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#10191e" />
+  <link rel="icon" href="data:," />
+  <title>Wildline: Rift Run</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="wordmark" href="#" aria-label="Wildline home"><span class="mark">W</span><span>WILDL<span class="accent">I</span>NE</span></a>
+      <div class="season"><span class="live-dot"></span> FIELD TEST <span class="season-divider">/</span> SECTOR 07</div>
+      <button class="sound-toggle" id="soundToggle" aria-label="Toggle sound">SOUND <span id="soundState">OFF</span></button>
+    </header>
+
+    <section class="game-wrap" aria-label="Wildline game">
+      <canvas id="game" width="960" height="600" aria-label="Top-down creature shooter game"></canvas>
+      <div class="game-vignette"></div>
+      <div class="hud" id="hud" hidden>
+        <div class="hud-top">
+          <div class="hud-card player-card">
+            <div class="avatar">✦</div><div class="player-meta"><span class="eyebrow">RUNNER // 07</span><b>ROOKIE</b></div>
+            <div class="health-wrap"><div class="health-label"><span>VITALS</span><b id="healthText">100</b></div><div class="health-track"><i id="healthBar"></i></div></div>
+          </div>
+          <div class="wave-card"><span class="eyebrow">WAVE</span><b id="waveText">01 <small>/ 04</small></b><span id="waveStatus">INCOMING</span></div>
+          <div class="score-card"><span class="eyebrow">RIFT SHARDS</span><b id="scoreText">0000</b><span class="shard-icon">◆</span></div>
+        </div>
+        <div class="hud-bottom"><div class="companion-card"><div class="companion-icon" id="companionIcon">◉</div><div><span class="eyebrow">BOND // <b id="bondText">0%</b></span><b id="companionName">MOSSBYTE</b><div class="bond-track"><i id="bondBar"></i></div></div><button id="pulseBtn" class="pulse-btn" title="Companion pulse (E)">E</button></div><div class="weapon-card"><span class="weapon-icon">⌁</span><span><span class="eyebrow">EQUIPPED</span><b>ARC PULSE</b></span><span class="ammo">∞</span></div></div>
+      </div>
+      <div class="overlay" id="menuOverlay">
+        <div class="menu-content">
+          <div class="kicker"><span class="kicker-line"></span> CREATURES. COMBAT. CHAOS.</div>
+          <h1>THE WILD<br><span>FIGHTS BACK.</span></h1>
+          <p>Drop into the Rift. Bond with a wild companion.<br class="desktop-only"> Make it out before the whole zone wakes up.</p>
+          <button class="primary-btn" id="startBtn"><span>DEPLOY INTO THE RIFT</span><b>↗</b></button>
+          <div class="howto"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> MOVE</span><span><kbd>CLICK</kbd> FIRE</span><span><kbd>E</kbd> COMPANION PULSE</span></div>
+        </div>
+        <div class="menu-side"><div class="side-label">FIELD NOTES <span>01—04</span></div><div class="note"><span class="note-icon green">✦</span><div><b>STAY ALIVE</b><small>Clear four escalating waves.</small></div></div><div class="note"><span class="note-icon orange">⬡</span><div><b>CLAIM THE SHARDS</b><small>Every takedown leaves a little something.</small></div></div><div class="note"><span class="note-icon blue">◉</span><div><b>TRUST YOUR BOND</b><small>Charge Mossbyte, unleash a pulse.</small></div></div><div class="side-coords">N 41° 07'  ·  E 73° 12'</div></div>
+      </div>
+      <div class="result-overlay" id="resultOverlay" hidden><div class="result-panel"><div class="kicker" id="resultKicker">RIFT CLEARED</div><h2 id="resultTitle">YOU MADE<br><span>IT OUT.</span></h2><p id="resultCopy">The wilds will remember this one.</p><div class="result-stat"><span>SHARDS SECURED</span><b id="finalScore">0000</b></div><button class="primary-btn" id="againBtn"><span>RUN IT BACK</span><b>↗</b></button></div></div>
+      <div class="pause-badge" id="pauseBadge" hidden>PAUSED <button id="resumeBtn">RESUME ↗</button></div>
+      <div class="touch-controls" id="touchControls" hidden><div class="stick" id="stick"><i></i></div><button class="touch-fire" id="touchFire">FIRE</button><button class="touch-pulse" id="touchPulse">E</button></div>
+    </section>
+    <footer class="footer"><div class="footer-left"><span class="status-pip"></span> RIFT ACTIVITY: <b>RISING</b> <span class="footer-divider">|</span> BUILD 0.7.14</div><div class="footer-right"><span>AN ORIGINAL FIELD TEST</span><span class="footer-divider">|</span><span>NO TWO RUNS ALIKE</span></div></footer>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
