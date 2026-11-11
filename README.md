@@ -17,17 +17,52 @@
 - 🌍 [Create with OMGithub](https://go.ondev.store/).
 <!-- omgithub:readme:end -->
 
-## Wildline: Rift Run
+## Wildline: Bloodrift
 
-A small, original creature-bonding arena shooter. Survive four waves, gather Rift Shards, and charge Mossbyte's area pulse to clear the final boss.
+An original open-world creature-taming shooter built with Three.js. Rift energy has cracked the island of Verdant Rift: wild Anima roam the groves and ridges, Hollow stalkers guard the ruins, and a Rift Warden holds the gate. Weaken and bind three Anima, break the Warden, and seal the breach.
 
-### Play
+### Highlights
 
-Open `index.html` in a browser or serve this folder with any static web server.
+- **Open world:** a hand-built island with five landmarks, floating islands, roaming wildlife, camps, and ruins.
+- **Creature bonding:** shoot an Anima down to roughly a third of its vitality, then spend a Prism Orb to bind it. Bound Anima follow you, fight beside you, and can be rallied or swapped.
+- **Three camera modes:** first-person gunner, third-person overwatch, and second-person "bond sight" that looks through your active Anima's eyes.
+- **Four original weapons:** VX-9 Havoc rifle, Manticore-12 shotgun, Sidewinder .45 pistol, and the Rift Cleaver.
+- **Rift mission:** a four-step objective chain that ends with the Warden fight and the gate seal, plus a results screen with run stats.
+- **Touch-ready:** a mobile HUD and on-screen stick/fire/bind/camera/interact controls for phones and tablets.
 
-- **Move:** WASD or arrow keys
-- **Aim and fire:** mouse movement and click (hold to fire)
-- **Companion pulse:** E or Space when the bond meter is full
-- **Pause / resume:** P or Escape
-- **Touch:** on-screen movement stick, fire, and pulse controls
+### Run
+
+There is no build step. Serve the folder with any static web server and open it:
+
+```bash
+python3 -m http.server 3002
+```
+
+Then visit `http://localhost:3002`.
+
+### Controls
+
+| Action | Keyboard / Mouse |
+| --- | --- |
+| Move | `WASD` |
+| Sprint / jump | `Shift` / `Space` |
+| Aim / fire | Mouse / left click |
+| Aim down sights | Right click |
+| Reload | `R` |
+| Switch weapon | `1`–`4` or mouse wheel |
+| Bind weakened Anima | `F` |
+| Interact / seal rift | `E` |
+| Cycle camera | `C` |
+| Rally pack / pet / swap Anima | `T` / `H` / `V` |
+| Field stim | `Q` |
+| Map | `M` |
+| Pause | `Esc` or `P` |
+
+Touch devices get a movement stick, drag-to-look area, and FIRE / BIND / INTERACT / CAMERA buttons.
+
+### Tech
+
+- Three.js is vendored under `vendor/three/`; the game runs directly from `index.html`, `style.css`, and `game.js`.
+- No network calls or external game assets are required at runtime.
+
 

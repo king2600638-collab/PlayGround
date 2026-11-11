@@ -3,52 +3,276 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#10191e" />
+  <meta name="theme-color" content="#081512" />
   <link rel="icon" href="data:," />
-  <title>Wildline: Rift Run</title>
+  <title>Wildline: Bloodrift</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=5" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three/three.module.js",
+        "three/addons/": "./vendor/three/addons/"
+      }
+    }
+  </script>
 </head>
 <body>
-  <main class="shell">
-    <header class="topbar">
-      <a class="wordmark" href="#" aria-label="Wildline home"><span class="mark">W</span><span>WILDL<span class="accent">I</span>NE</span></a>
-      <div class="season"><span class="live-dot"></span> FIELD TEST <span class="season-divider">/</span> SECTOR 07</div>
-      <button class="sound-toggle" id="soundToggle" aria-label="Toggle sound">SOUND <span id="soundState">OFF</span></button>
+  <main class="game-shell" aria-label="Wildline: Bloodrift">
+    <canvas id="game" aria-label="Wildline 3D open-world creature combat game"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <header class="site-header" id="siteHeader">
+      <a class="wordmark" href="#" aria-label="Wildline home" id="wordmark">
+        <span class="mark">W</span>
+        <span>WILDL<span class="accent">I</span>NE</span>
+        <span class="wordmark-sub">BLOODRIFT</span>
+      </a>
+      <div class="header-center">
+        <span class="live-dot"></span>
+        <span>EXPEDITION 07</span>
+        <span class="slash">/</span>
+        <span id="headerZone">THE VERDANT RIFT</span>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="audioBtn" aria-label="Toggle sound" title="Toggle sound"><span class="icon">◖</span><span id="audioLabel">AUDIO OFF</span></button>
+        <button class="icon-btn" id="pauseBtn" aria-label="Pause game" title="Pause">II</button>
+      </div>
     </header>
 
-    <section class="game-wrap" aria-label="Wildline game">
-      <canvas id="game" width="960" height="600" aria-label="Top-down creature shooter game"></canvas>
-      <div class="game-vignette"></div>
-      <div class="hud" id="hud" hidden>
-        <div class="hud-top">
-          <div class="hud-card player-card">
-            <div class="avatar">✦</div><div class="player-meta"><span class="eyebrow">RUNNER // 07</span><b>ROOKIE</b></div>
-            <div class="health-wrap"><div class="health-label"><span>VITALS</span><b id="healthText">100</b></div><div class="health-track"><i id="healthBar"></i></div></div>
+    <section class="hud" id="hud" hidden aria-label="Game HUD">
+      <div class="hud-top">
+        <div class="brand-chip">
+          <span class="brand-mark">W</span>
+          <span><b>WILDLINE</b><small>BLOODRIFT</small></span>
+        </div>
+
+        <div class="compass-wrap">
+          <canvas id="compass" width="560" height="46"></canvas>
+          <div class="compass-objective" id="compassObjective"><i></i><span>ANIMA SIGNAL</span></div>
+        </div>
+
+        <div class="top-meta">
+          <div class="meta-cell"><span>ZONE</span><b id="zoneLabel">VERDANT RIFT</b></div>
+          <div class="meta-cell"><span>RIFT TIME</span><b id="timeLabel">18:42</b></div>
+          <button class="square-btn" id="mapBtn" title="Open map (M)">M</button>
+        </div>
+      </div>
+
+      <div class="left-rail">
+        <div class="minimap-card">
+          <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+          <canvas id="minimap" width="200" height="200"></canvas>
+          <div class="minimap-label"><span id="coordLabel">N 00° · E 00°</span><b><i class="live-dot"></i> LIVE</b></div>
+        </div>
+        <div class="mission-card" id="missionCard">
+          <div class="mission-head"><span class="eyebrow">ACTIVE DIRECTIVE</span><span id="missionStep">01 / 04</span></div>
+          <h3 id="missionTitle">THE FIRST BOND</h3>
+          <p id="missionCopy">Weaken a wild Anima, then bind it with a Prism Orb.</p>
+          <div class="mission-progress"><i id="missionBar"></i></div>
+          <div class="mission-foot"><span id="missionHint">F · BIND ANIMA</span><b id="missionCount">0 / 1</b></div>
+        </div>
+      </div>
+
+      <div class="right-rail">
+        <div class="pack-card">
+          <div class="pack-head"><span class="eyebrow">BONDED PACK</span><span id="packCount">0 / 3</span></div>
+          <div class="pack-slots" id="packSlots">
+            <div class="pack-slot empty"><span>01</span><b>EMPTY</b><i>NO SIGNAL</i></div>
+            <div class="pack-slot empty"><span>02</span><b>EMPTY</b><i>NO SIGNAL</i></div>
+            <div class="pack-slot empty"><span>03</span><b>EMPTY</b><i>NO SIGNAL</i></div>
           </div>
-          <div class="wave-card"><span class="eyebrow">WAVE</span><b id="waveText">01 <small>/ 04</small></b><span id="waveStatus">INCOMING</span></div>
-          <div class="score-card"><span class="eyebrow">RIFT SHARDS</span><b id="scoreText">0000</b><span class="shard-icon">◆</span></div>
+          <div class="pack-action" id="packAction"><kbd>T</kbd> RALLY COMPANION <kbd>H</kbd> TAME / PET</div>
         </div>
-        <div class="hud-bottom"><div class="companion-card"><div class="companion-icon" id="companionIcon">◉</div><div><span class="eyebrow">BOND // <b id="bondText">0%</b></span><b id="companionName">MOSSBYTE</b><div class="bond-track"><i id="bondBar"></i></div></div><button id="pulseBtn" class="pulse-btn" title="Companion pulse (E)">E</button></div><div class="weapon-card"><span class="weapon-icon">⌁</span><span><span class="eyebrow">EQUIPPED</span><b>ARC PULSE</b></span><span class="ammo">∞</span></div></div>
-      </div>
-      <div class="overlay" id="menuOverlay">
-        <div class="menu-content">
-          <div class="kicker"><span class="kicker-line"></span> CREATURES. COMBAT. CHAOS.</div>
-          <h1>THE WILD<br><span>FIGHTS BACK.</span></h1>
-          <p>Drop into the Rift. Bond with a wild companion.<br class="desktop-only"> Make it out before the whole zone wakes up.</p>
-          <button class="primary-btn" id="startBtn"><span>DEPLOY INTO THE RIFT</span><b>↗</b></button>
-          <div class="howto"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> MOVE</span><span><kbd>CLICK</kbd> FIRE</span><span><kbd>E</kbd> COMPANION PULSE</span></div>
+        <div class="intel-card">
+          <div class="intel-head"><span class="eyebrow">RIFT INTEL</span><span class="signal">▲ 84%</span></div>
+          <div class="intel-row"><span>HOSTILES</span><b id="enemyCount">0</b></div>
+          <div class="intel-row"><span>SHARDS</span><b id="shardCount">0000</b></div>
+          <div class="intel-row"><span>BINDS</span><b id="bindCount">0</b></div>
         </div>
-        <div class="menu-side"><div class="side-label">FIELD NOTES <span>01—04</span></div><div class="note"><span class="note-icon green">✦</span><div><b>STAY ALIVE</b><small>Clear four escalating waves.</small></div></div><div class="note"><span class="note-icon orange">⬡</span><div><b>CLAIM THE SHARDS</b><small>Every takedown leaves a little something.</small></div></div><div class="note"><span class="note-icon blue">◉</span><div><b>TRUST YOUR BOND</b><small>Charge Mossbyte, unleash a pulse.</small></div></div><div class="side-coords">N 41° 07'  ·  E 73° 12'</div></div>
+        <div class="killfeed" id="killfeed"></div>
       </div>
-      <div class="result-overlay" id="resultOverlay" hidden><div class="result-panel"><div class="kicker" id="resultKicker">RIFT CLEARED</div><h2 id="resultTitle">YOU MADE<br><span>IT OUT.</span></h2><p id="resultCopy">The wilds will remember this one.</p><div class="result-stat"><span>SHARDS SECURED</span><b id="finalScore">0000</b></div><button class="primary-btn" id="againBtn"><span>RUN IT BACK</span><b>↗</b></button></div></div>
-      <div class="pause-badge" id="pauseBadge" hidden>PAUSED <button id="resumeBtn">RESUME ↗</button></div>
-      <div class="touch-controls" id="touchControls" hidden><div class="stick" id="stick"><i></i></div><button class="touch-fire" id="touchFire">FIRE</button><button class="touch-pulse" id="touchPulse">E</button></div>
+
+      <div class="center-hud">
+        <div class="reticle" id="reticle">
+          <i class="r-dot"></i><i class="r-t"></i><i class="r-b"></i><i class="r-l"></i><i class="r-r"></i>
+          <span class="hitmarker" id="hitmarker">×</span>
+        </div>
+        <div class="target-card" id="targetCard" hidden>
+          <div class="target-head"><span id="targetType">WILD ANIMA</span><b id="targetDistance">00M</b></div>
+          <div class="target-name" id="targetName">MOSS BYTE</div>
+          <div class="target-health"><i id="targetHealthBar"></i></div>
+          <div class="target-foot"><span id="targetHpText">100 / 100</span><b id="targetState">HOSTILE</b></div>
+        </div>
+        <div class="boss-wrap" id="bossWrap" hidden>
+          <div class="boss-head"><span>RIFT WARDEN // OSSUARY</span><b id="bossHpText">100%</b></div>
+          <div class="boss-health"><i id="bossBar"></i></div>
+        </div>
+        <div class="interact-prompt" id="interactPrompt" hidden><kbd>E</kbd><span id="interactText">INTERACT</span></div>
+      </div>
+
+      <div class="bottom-hud">
+        <div class="vitals">
+          <div class="vitals-top">
+            <div class="operator-mark"><span>07</span></div>
+            <div><span class="eyebrow">OPERATOR</span><b>ROOK</b><i>FIELD RANGER</i></div>
+            <div class="vitals-num"><span>HP</span><b id="healthText">100</b></div>
+          </div>
+          <div class="bar-row"><span>HEALTH</span><div class="bar health"><i id="healthBar"></i></div><b id="healthSmall">100</b></div>
+          <div class="bar-row"><span>SHIELD</span><div class="bar shield"><i id="shieldBar"></i></div><b id="shieldSmall">50</b></div>
+          <div class="vitals-bottom">
+            <span><kbd>SHIFT</kbd> SPRINT</span><span><kbd>SPACE</kbd> JUMP</span><span class="stims"><kbd>Q</kbd> STIM <b id="stimCount">3</b></span>
+          </div>
+        </div>
+
+        <div class="ability-cluster">
+          <div class="camera-chip" id="cameraChip"><span>CAMERA</span><b id="cameraMode">FIRST PERSON</b><i id="cameraKey">C</i></div>
+          <div class="orb-card">
+            <div class="orb-icon" id="orbIcon">◈</div>
+            <div><span class="eyebrow">PRISM ORBS</span><b id="orbCount">6</b></div>
+            <button class="orb-key" id="orbBtn">F</button>
+          </div>
+        </div>
+
+        <div class="weapon-hud">
+          <div class="weapon-slots" id="weaponSlots">
+            <div class="wslot active" data-weapon="0"><span>1</span><b>VX-9</b></div>
+            <div class="wslot" data-weapon="1"><span>2</span><b>MANTICORE</b></div>
+            <div class="wslot" data-weapon="2"><span>3</span><b>SIDEWINDER</b></div>
+            <div class="wslot" data-weapon="3"><span>4</span><b>CLEAVER</b></div>
+          </div>
+          <div class="weapon-main">
+            <div class="weapon-name"><span class="eyebrow">EQUIPPED // <b id="fireMode">AUTO</b></span><b id="weaponName">VX-9 HAVOC</b></div>
+            <div class="ammo-block"><b id="ammoMag">30</b><span>/</span><i id="ammoReserve">120</i></div>
+          </div>
+          <div class="weapon-foot"><span id="weaponClass">ASSAULT RIFLE</span><b id="reloadHint">R · RELOAD</b></div>
+          <div class="reload-track" id="reloadTrack"><i id="reloadBar"></i></div>
+        </div>
+      </div>
+
+      <div class="toast-stack" id="toastStack"></div>
+      <div class="objective-marker" id="objectiveMarker" hidden><span class="marker-diamond"></span><b id="markerLabel">OBJECTIVE</b><i id="markerDistance">000M</i></div>
+      <div class="damage-flash" id="damageFlash"></div>
+      <div class="capture-flash" id="captureFlash"></div>
+      <div class="slowmo-edge" id="slowmoEdge"></div>
+      <div class="notice" id="notice" hidden><span id="noticeKicker">BOND ESTABLISHED</span><b id="noticeTitle">MOSS BYTE</b><i id="noticeCopy">+ NATURE RESONANCE</i></div>
     </section>
-    <footer class="footer"><div class="footer-left"><span class="status-pip"></span> RIFT ACTIVITY: <b>RISING</b> <span class="footer-divider">|</span> BUILD 0.7.14</div><div class="footer-right"><span>AN ORIGINAL FIELD TEST</span><span class="footer-divider">|</span><span>NO TWO RUNS ALIKE</span></div></footer>
+
+    <section class="start-screen" id="startScreen" aria-label="Main menu">
+      <div class="hero-shade"></div>
+      <div class="hero-grid"></div>
+      <div class="menu-copy">
+        <div class="kicker"><span class="kicker-line"></span> OPEN WORLD CREATURE COMBAT <span class="kicker-badge">FIELD BUILD 1.0</span></div>
+        <h1><span class="h-kicker">TAME THE WILD.</span>WILDLINE<br><span class="title-accent">BLOODRIFT</span></h1>
+        <p class="hero-copy">A living island. Five apex Anima. One trigger-happy ranger.<br><b>Weaken them. Bind them. Fight beside them.</b></p>
+        <div class="hero-buttons">
+          <button class="primary-btn" id="startBtn"><span>ENTER THE WILD</span><b>↗</b></button>
+          <button class="ghost-btn" id="briefBtn"><span>FIELD BRIEF</span><b>?</b></button>
+        </div>
+        <div class="input-strip">
+          <span><kbd>WASD</kbd> MOVE</span><span><kbd>MOUSE</kbd> AIM</span><span><kbd>LMB</kbd> FIRE</span><span><kbd>F</kbd> BIND</span><span><kbd>C</kbd> CAMERA</span><span><kbd>M</kbd> MAP</span>
+        </div>
+      </div>
+
+      <aside class="menu-side">
+        <div class="side-top"><span>FIELD LOADOUT</span><b>07 / VERDANT RIFT</b></div>
+        <div class="loadout-line"><span class="line-icon">⌁</span><div><b>VX-9 HAVOC</b><small>ASSAULT RIFLE · 5.56</small></div><i>30</i></div>
+        <div class="loadout-line"><span class="line-icon orange">✦</span><div><b>MANTICORE-12</b><small>BREACH SHOTGUN · 12G</small></div><i>06</i></div>
+        <div class="loadout-line"><span class="line-icon blue">◈</span><div><b>PRISM ORBS</b><small>BIND WEAKENED ANIMA</small></div><i>06</i></div>
+        <div class="camera-modes">
+          <span>VIEW SYSTEM</span>
+          <div class="mode active"><b>01</b><span>FIRST PERSON<i>GUNNER</i></span></div>
+          <div class="mode"><b>02</b><span>THIRD PERSON<i>OVERWATCH</i></span></div>
+          <div class="mode"><b>03</b><span>SECOND PERSON<i>BOND SIGHT</i></span></div>
+        </div>
+        <div class="side-note"><i class="live-dot"></i> LIVE WORLD · NO LOADING SCREENS</div>
+      </aside>
+
+      <div class="menu-bottom">
+        <div class="menu-stat"><span>ANIMA SPECIES</span><b>05</b></div>
+        <div class="menu-stat"><span>ISLAND SIZE</span><b>220 KM²</b></div>
+        <div class="menu-stat"><span>RIFT THREAT</span><b class="danger">SEVERE</b></div>
+        <div class="menu-bottom-note">AN ORIGINAL CREATURE-COMBAT FIELD TEST <span>/</span> NO TWO HUNTS ALIKE</div>
+      </div>
+    </section>
+
+    <section class="panel-overlay" id="pauseScreen" hidden>
+      <div class="panel">
+        <div class="panel-kicker">FIELD PAUSED</div>
+        <h2>CATCH YOUR<br><span>BREATH.</span></h2>
+        <p>The island can wait. Your pack cannot.</p>
+        <div class="panel-stats" id="pauseStats"></div>
+        <button class="primary-btn" id="resumeBtn"><span>RESUME EXPEDITION</span><b>↗</b></button>
+        <button class="text-btn" id="restartBtn">RESTART FIELD TEST</button>
+      </div>
+    </section>
+
+    <section class="panel-overlay" id="briefScreen" hidden>
+      <div class="brief-panel">
+        <button class="close-btn" id="briefClose">×</button>
+        <div class="panel-kicker">FIELD BRIEF // OPERATION WILDBOUND</div>
+        <h2>MAKE THE ISLAND<br><span>FIGHT FOR YOU.</span></h2>
+        <div class="brief-grid">
+          <article><span>01</span><h3>WEAKEN</h3><p>Wild Anima guard the rift. Put enough fire on them to break their guard, but don't kill what you came to tame.</p></article>
+          <article><span>02</span><h3>BIND</h3><p>Below 35% vitality an Anima becomes bindable. Aim, press <kbd>F</kbd>, and throw a Prism Orb. Below 20% is a guaranteed bond.</p></article>
+          <article><span>03</span><h3>FIGHT TOGETHER</h3><p>Your bonded pack follows you into every fight. Press <kbd>T</kbd> to rally them and <kbd>H</kbd> to strengthen the bond.</p></article>
+          <article><span>04</span><h3>BREAK THE WARDEN</h3><p>Bind three Anima to shatter the gate seal. Defeat the Rift Warden, then interact with the gate to close the breach.</p></article>
+        </div>
+        <div class="brief-controls">
+          <span><kbd>1–4</kbd> WEAPONS</span><span><kbd>RMB</kbd> ADS</span><span><kbd>R</kbd> RELOAD</span><span><kbd>Q</kbd> STIM</span><span><kbd>C</kbd> CAMERA</span><span><kbd>M</kbd> MAP</span><span><kbd>ESC</kbd> PAUSE</span>
+        </div>
+        <button class="primary-btn" id="briefDeploy"><span>DEPLOY</span><b>↗</b></button>
+      </div>
+    </section>
+
+    <section class="panel-overlay" id="resultScreen" hidden>
+      <div class="result-panel">
+        <div class="panel-kicker" id="resultKicker">RIFT SEALED</div>
+        <h2 id="resultTitle">THE ISLAND<br><span>REMEMBERS.</span></h2>
+        <p id="resultCopy">The breach is closed. Your pack has a home — for now.</p>
+        <div class="result-stat-grid" id="resultStats"></div>
+        <button class="primary-btn" id="againBtn"><span>RUN IT BACK</span><b>↗</b></button>
+      </div>
+    </section>
+
+    <section class="panel-overlay death-overlay" id="deathScreen" hidden>
+      <div class="death-panel">
+        <div class="panel-kicker">SIGNAL LOST</div>
+        <h2>THE WILD<br><span>TOOK YOU.</span></h2>
+        <p>The beacon is pulling you back. Your bonded pack returns with you.</p>
+        <div class="respawn-row"><span>RECONSTITUTING</span><b id="respawnTimer">5</b></div>
+        <button class="primary-btn" id="respawnBtn"><span>RESPAWN AT BEACON</span><b>↗</b></button>
+      </div>
+    </section>
+
+    <section class="map-overlay" id="mapScreen" hidden>
+      <div class="map-panel">
+        <div class="map-head"><div><span class="panel-kicker">FIELD CARTOGRAPHY</span><h2>VERDANT RIFT</h2></div><button class="close-btn" id="mapClose">×</button></div>
+        <div class="map-canvas-wrap"><canvas id="fullMap" width="900" height="640"></canvas><div class="map-scan"></div></div>
+        <div class="map-legend">
+          <span><i class="lg player"></i>YOU</span><span><i class="lg anima"></i>ANIMA</span><span><i class="lg hostile"></i>HOLLOW</span><span><i class="lg poi"></i>LANDMARK</span><span><i class="lg gate"></i>RIFT GATE</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="touch-controls" id="touchControls" hidden aria-label="Touch controls">
+      <div class="touch-stick" id="touchStick"><i></i><span>MOVE</span></div>
+      <div class="touch-look" id="touchLook"><span>DRAG TO LOOK</span></div>
+      <button class="touch-btn fire" id="touchFire">FIRE</button>
+      <button class="touch-btn jump" id="touchJump">↑</button>
+      <button class="touch-btn bind" id="touchBind">F</button>
+      <button class="touch-btn camera" id="touchCamera">C</button>
+      <button class="touch-btn interact" id="touchInteract">E</button>
+      <button class="touch-btn reload" id="touchReload">R</button>
+    </section>
+
+    <div class="lock-hint" id="lockHint" hidden><span>CLICK TO CAPTURE MOUSE</span><b>ESC TO RELEASE</b></div>
   </main>
-  <script src="game.js"></script>
+
+  <script type="module" src="game.js?v=5"></script>
 </body>
 </html>
