@@ -1010,40 +1010,112 @@ function makeWeaponModel(type, viewmodel = false) {
 }
 
 /* ---------------- anima species ---------------- */
+// Ten original Anima, built around the classic starter / evolution / type-match
+// loop: a Nature / Ember / Aqua starter triad, wild encounters, and bond-driven
+// evolution. Names and models are original to Wildline.
 const SPECIES = {
   mossling: {
-    name: 'MOSS BYTE', kind: 'MOSS LING', level: 4, element: 'NATURE', color: 0x9bd35d, accent: 0xc8f36a,
+    dex: 1, name: 'SPRIGBYTE', kind: 'SEEDLING ANIMA', level: 5, element: 'NATURE', color: 0x9bd35d, accent: 0xc8f36a,
     hp: 130, speed: 2.2, aggro: 10, range: 2.7, damage: 9, melee: true, hover: 0, scale: 1.0,
-    bio: 'A patient grove guardian with a hide of living moss.'
+    evolve: 'THORNBLOOM', evolveAt: 5, starter: true, rarity: 'STARTER', move: 'LEAF LASH',
+    bio: 'A patient grove guardian with a hide of living moss. It stores sunlight in the seed on its back.'
   },
   emberfox: {
-    name: 'CINDER', kind: 'EMBER FOX', level: 5, element: 'EMBER', color: 0xf28a4d, accent: 0xffc46b,
+    dex: 2, name: 'CINDERKIT', kind: 'EMBER FOX', level: 5, element: 'EMBER', color: 0xf28a4d, accent: 0xffc46b,
     hp: 92, speed: 4.4, aggro: 18, range: 13, damage: 8, melee: false, hover: 0, scale: 0.92,
-    bio: 'A spark-tailed hunter that never stops moving.'
+    evolve: 'FLAREFANG', evolveAt: 5, starter: true, rarity: 'STARTER', move: 'EMBER SPARK',
+    bio: 'A spark-tailed hunter that never stops moving. Its tail flame burns brighter near rift energy.'
+  },
+  rivulet: {
+    dex: 3, name: 'RIVULET', kind: 'TIDE OTTER', level: 5, element: 'AQUA', color: 0x58b8cf, accent: 0x9bf5ff,
+    hp: 118, speed: 3.4, aggro: 15, range: 12, damage: 9, melee: false, hover: 0.18, scale: 0.98,
+    evolve: 'TIDALOT', evolveAt: 5, starter: true, rarity: 'STARTER', move: 'TIDE PULSE',
+    bio: 'A playful river hunter ringed by floating droplets. It can read the current like a map.'
   },
   voltfin: {
-    name: 'ARC FIN', kind: 'VOLT FIN', level: 5, element: 'VOLT', color: 0x65cfd8, accent: 0xa5f5ff,
+    dex: 4, name: 'ARC FIN', kind: 'VOLT FIN', level: 5, element: 'VOLT', color: 0x65cfd8, accent: 0xa5f5ff,
     hp: 108, speed: 3.5, aggro: 17, range: 14, damage: 10, melee: false, hover: 1.25, scale: 1.0,
-    bio: 'A living current that drifts above the shallows.'
+    evolve: 'STORMRAY', evolveAt: 7, rarity: 'UNCOMMON', move: 'ARC BOLT',
+    bio: 'A living current that drifts above the shallows. Its dorsal arc crackles before a storm.'
   },
   gloamwing: {
-    name: 'DUSK WING', kind: 'GLOAM WING', level: 6, element: 'VOID', color: 0xa587d4, accent: 0xd7b9ff,
+    dex: 5, name: 'DUSK WING', kind: 'GLOAM WING', level: 6, element: 'VOID', color: 0xa587d4, accent: 0xd7b9ff,
     hp: 84, speed: 4.1, aggro: 20, range: 12, damage: 11, melee: false, hover: 1.55, scale: 1.0,
-    bio: 'A silent night hunter with wings full of old starlight.'
+    evolve: 'NIGHTREAVE', evolveAt: 8, rarity: 'RARE', move: 'VOID TALON',
+    bio: 'A silent night hunter with wings full of old starlight. It phases through shadows between wingbeats.'
+  },
+  pebblit: {
+    dex: 6, name: 'PEBBLIT', kind: 'SHALE GOLEM', level: 6, element: 'EARTH', color: 0x9d8b6c, accent: 0xffd176,
+    hp: 190, speed: 2.4, aggro: 12, range: 3.1, damage: 17, melee: true, hover: 0, scale: 1.2,
+    evolve: 'CRAIGMAW', evolveAt: 7, rarity: 'UNCOMMON', move: 'STONE CRASH',
+    bio: 'A walking outcrop with a warm geode heart. It naps in the sun and wakes when the ground shakes.'
+  },
+  zephyr: {
+    dex: 7, name: 'ZEPHYR', kind: 'GALE HAWK', level: 6, element: 'GALE', color: 0x9fd7b0, accent: 0xe7ffd0,
+    hp: 96, speed: 4.6, aggro: 21, range: 15, damage: 9, melee: false, hover: 1.35, scale: 1.0,
+    evolve: 'SKYRAZOR', evolveAt: 7, rarity: 'RARE', move: 'GALE CUT',
+    bio: 'A storm-winged scout that rides thermals above the canopy and dives without a sound.'
+  },
+  frostkit: {
+    dex: 8, name: 'FROSTKIT', kind: 'RIME HARE', level: 6, element: 'FROST', color: 0xb9e6ef, accent: 0xe8ffff,
+    hp: 112, speed: 3.7, aggro: 16, range: 13, damage: 11, melee: false, hover: 0, scale: 0.95,
+    evolve: 'RIMEFANG', evolveAt: 7, rarity: 'RARE', move: 'HOARFROST',
+    bio: 'A snow-pelted runner with crystal ears. Each hop leaves a brief trail of frozen flowers.'
+  },
+  lumoth: {
+    dex: 9, name: 'LUMOTH', kind: 'PRISM MOTH', level: 7, element: 'LUMEN', color: 0xf0d38a, accent: 0xfff5b8,
+    hp: 88, speed: 4.0, aggro: 19, range: 12, damage: 12, melee: false, hover: 1.6, scale: 1.0,
+    evolve: 'AUROROTH', evolveAt: 8, rarity: 'MYTHIC', move: 'PRISM DUST',
+    bio: 'A living lantern that feeds on dawn light. Its wings scatter colors that Hollow cannot endure.'
   },
   titanox: {
-    name: 'TITANOX', kind: 'TITAN OX', level: 9, element: 'EARTH', color: 0xb8a06a, accent: 0xffd176,
+    dex: 10, name: 'TITANOX', kind: 'TITAN OX', level: 9, element: 'EARTH', color: 0xb8a06a, accent: 0xffd176,
     hp: 340, speed: 2.6, aggro: 13, range: 3.4, damage: 22, melee: true, hover: 0, scale: 1.55,
-    bio: 'A living rampart. The island itself seems to move with it.'
+    evolve: 'COLOSSAR', evolveAt: 10, rarity: 'APEX', move: 'QUAKE HORN',
+    bio: 'A living rampart. The island itself seems to move with it. Locals call it the hill that walks.'
   }
 };
 const WILD_SPAWNS = [
   { key: 'mossling', x: -42, z: -24 },
   { key: 'emberfox', x: 48, z: -34 },
-  { key: 'voltfin', x: 47, z: 27 },
+  { key: 'rivulet', x: 57, z: 22 },
+  { key: 'voltfin', x: 39, z: 30 },
   { key: 'gloamwing', x: -47, z: 38 },
+  { key: 'pebblit', x: -65, z: 5 },
+  { key: 'zephyr', x: -24, z: -56 },
+  { key: 'frostkit', x: -54, z: 57 },
+  { key: 'lumoth', x: 22, z: -46 },
   { key: 'titanox', x: 63, z: 1 }
 ];
+const STARTER_KEYS = ['mossling', 'emberfox', 'rivulet'];
+const TYPE_INFO = {
+  NATURE: { color: '#9bd35d', weak: ['EMBER', 'FROST', 'GALE'], resist: ['AQUA', 'EARTH'] },
+  EMBER: { color: '#ff9a5f', weak: ['AQUA', 'EARTH'], resist: ['NATURE', 'FROST'] },
+  AQUA: { color: '#79d9e3', weak: ['VOLT', 'NATURE'], resist: ['EMBER', 'EARTH'] },
+  VOLT: { color: '#ffe36b', weak: ['EARTH'], resist: ['AQUA', 'GALE'] },
+  VOID: { color: '#c49cff', weak: ['LUMEN', 'VOLT'], resist: ['VOID'] },
+  EARTH: { color: '#c9ad78', weak: ['AQUA', 'NATURE', 'FROST'], resist: ['VOLT', 'EMBER'] },
+  GALE: { color: '#a9ecc0', weak: ['VOLT', 'FROST'], resist: ['NATURE', 'EARTH'] },
+  FROST: { color: '#c8f4ff', weak: ['EMBER', 'EARTH'], resist: ['GALE', 'AQUA'] },
+  LUMEN: { color: '#ffe9a0', weak: ['VOID'], resist: ['LUMEN'] },
+  KINETIC: { color: '#e3eddd', weak: [], resist: [] }
+};
+function typeMultiplier(attack, defend) {
+  const info = TYPE_INFO[defend] || TYPE_INFO.KINETIC;
+  if (attack && info.weak.includes(attack)) return 1.55;
+  if (attack && info.resist.includes(attack)) return 0.7;
+  return 1;
+}
+function actorElement(actor) {
+  if (!actor) return 'KINETIC';
+  if (actor.def) return actor.def.element;
+  if (actor.kind === 'hollow' || actor.kind === 'boss') return 'VOID';
+  return actor.element || 'KINETIC';
+}
+function typeLine(element) {
+  const info = TYPE_INFO[element] || TYPE_INFO.KINETIC;
+  return { weak: info.weak.join(' · ') || 'NONE', resist: info.resist.join(' · ') || 'NONE', color: info.color };
+}
 
 function makeEye(parent, x, y, z, color, size = 0.055) {
   const eye = new THREE.Mesh(new THREE.SphereGeometry(size, 6, 4), glowMat(color, 4.5, { metalness: 0 }));
@@ -1229,7 +1301,188 @@ function makeAnimaModel(key) {
       if (parts['leg-11']) parts['leg-11'].rotation.x = -Math.sin(t * 3.1 + speed) * 0.3;
       if (parts['leg11']) parts['leg11'].rotation.x = Math.sin(t * 3.1 + speed) * 0.3;
     };
+  } else if (key === 'rivulet') {
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.52, 9, 7), bodyMat);
+    body.position.y = 0.72; body.scale.set(0.88, 0.76, 1.42); body.castShadow = true; body.receiveShadow = true; root.add(body);
+    addMesh(body, new THREE.SphereGeometry(0.4, 8, 6), creamMat, 0, -0.04, 0.18).scale.set(0.78, 0.72, 0.82);
+    const head = new THREE.Group(); head.position.set(0, 1.02, 0.62); root.add(head); parts.head = head;
+    addMesh(head, new THREE.SphereGeometry(0.33, 8, 6), bodyMat, 0, 0, 0).scale.set(1.05, 0.92, 0.96);
+    addMesh(head, new THREE.SphereGeometry(0.2, 7, 5), creamMat, 0, -0.08, 0.25).scale.set(0.9, 0.62, 1);
+    addMesh(head, new THREE.SphereGeometry(0.06, 5, 4), darkMat, 0, -0.04, 0.44);
+    for (const side of [-1, 1]) {
+      makeEye(head, side * 0.14, 0.05, 0.28, 0xc8ffff, 0.05);
+      const ear = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.25, 4), bodyMat);
+      ear.position.set(side * 0.22, 0.24, -0.02); ear.rotation.z = side * -0.25; head.add(ear);
+      const flipper = new THREE.Group(); flipper.position.set(side * 0.46, 0.55, 0.12);
+      addMesh(flipper, new THREE.ConeGeometry(0.18, 0.6, 4), std(0x3d8fa3), 0, -0.12, 0).rotation.z = side * -0.7;
+      root.add(flipper); parts['flipper' + side] = flipper;
+      const leg = new THREE.Group(); leg.position.set(side * 0.24, 0.3, -0.12);
+      addMesh(leg, new THREE.CylinderGeometry(0.08, 0.11, 0.32, 5), darkMat, 0, -0.12, 0);
+      root.add(leg); parts['leg' + side] = leg;
+    }
+    const tail = new THREE.Group(); tail.position.set(0, 0.62, -0.78); root.add(tail); parts.tail = tail;
+    addMesh(tail, new THREE.ConeGeometry(0.3, 0.7, 3), bodyMat, 0, 0.1, -0.28).rotation.x = -1.15;
+    addMesh(tail, new THREE.ConeGeometry(0.18, 0.4, 3), std(0x3d8fa3), 0, 0.16, -0.56).rotation.x = -1.25;
+    const bubbles = new THREE.Group(); root.add(bubbles); parts.bubbles = bubbles;
+    for (let i = 0; i < 7; i++) {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.07 + i * 0.025, 0.008, 3, 10), glowMat(0x9bf5ff, 2.4, { transparent: true, opacity: 0.7 }));
+      ring.position.set(wr(-0.55, 0.55), 0.62 + wr(-0.1, 0.5), wr(-0.3, 0.55));
+      ring.rotation.set(wr(0, TAU), wr(0, TAU), wr(0, TAU)); bubbles.add(ring);
+    }
+    parts.anim = (t, speed) => {
+      root.position.y = Math.sin(t * 2.6) * 0.05;
+      head.rotation.y = Math.sin(t * 0.9) * 0.16;
+      tail.rotation.y = Math.sin(t * 3.6) * 0.35;
+      bubbles.rotation.y = t * 1.1;
+      if (parts['flipper-1']) parts['flipper-1'].rotation.x = Math.sin(t * 4.2) * 0.35;
+      if (parts['flipper1']) parts['flipper1'].rotation.x = -Math.sin(t * 4.2) * 0.35;
+    };
+  } else if (key === 'pebblit') {
+    const body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.78, 0), bodyMat);
+    body.position.y = 0.92; body.scale.set(1.05, 0.95, 1.15); body.castShadow = true; body.receiveShadow = true; root.add(body);
+    const head = new THREE.Group(); head.position.set(0, 1.52, 0.42); root.add(head); parts.head = head;
+    addMesh(head, new THREE.DodecahedronGeometry(0.42, 0), bodyMat, 0, 0, 0).scale.set(1.1, 0.9, 1.04);
+    addMesh(head, new THREE.BoxGeometry(0.44, 0.2, 0.3), std(0x74674f), 0, -0.2, 0.16);
+    for (const side of [-1, 1]) {
+      makeEye(head, side * 0.17, 0.05, 0.35, 0xffe08a, 0.05);
+      const brow = addMesh(head, new THREE.BoxGeometry(0.2, 0.09, 0.12), std(0x5d5240), side * 0.17, 0.2, 0.32);
+      brow.rotation.z = side * 0.2;
+      const arm = new THREE.Group(); arm.position.set(side * 0.72, 1.16, 0.05);
+      addMesh(arm, new THREE.CylinderGeometry(0.13, 0.16, 0.55, 5), bodyMat, 0, -0.2, 0);
+      addMesh(arm, new THREE.DodecahedronGeometry(0.26, 0), std(0x7d7058), 0, -0.48, 0.05);
+      arm.rotation.z = side * 0.18; root.add(arm); parts['arm' + side] = arm;
+      const leg = new THREE.Group(); leg.position.set(side * 0.35, 0.52, 0);
+      addMesh(leg, new THREE.CylinderGeometry(0.17, 0.22, 0.46, 5), darkMat, 0, -0.2, 0);
+      addMesh(leg, new THREE.BoxGeometry(0.34, 0.16, 0.46), std(0x6d6249), 0, -0.4, 0.04);
+      root.add(leg); parts['leg' + side] = leg;
+    }
+    const geode = addMesh(root, new THREE.OctahedronGeometry(0.22, 0), glowMat(0xffd176, 2.8), 0, 1.28, -0.62);
+    geode.scale.set(0.8, 1.25, 0.8);
+    const shards = new THREE.Group(); root.add(shards); parts.shards = shards;
+    for (let i = 0; i < 5; i++) {
+      const shard = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.36 + i * 0.03, 4), glowMat(i % 2 ? 0xffd176 : 0xc9ad78, 2));
+      shard.position.set(wr(-0.5, 0.5), 1.55 + wr(-0.05, 0.15), wr(-0.5, 0.05));
+      shard.rotation.set(wr(-0.3, 0.3), wr(0, TAU), wr(-0.4, 0.4)); shards.add(shard);
+    }
+    parts.anim = (t, speed) => {
+      root.position.y = Math.abs(Math.sin(t * 1.6)) * 0.035;
+      head.rotation.y = Math.sin(t * 0.55) * 0.09;
+      if (parts['arm-1']) parts['arm-1'].rotation.x = Math.sin(t * 2.4) * 0.14;
+      if (parts.arm1) parts.arm1.rotation.x = -Math.sin(t * 2.4) * 0.14;
+    };
+  } else if (key === 'zephyr') {
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.48, 9, 7), bodyMat);
+    body.position.y = 1.02; body.scale.set(0.76, 0.92, 1.24); body.castShadow = true; root.add(body);
+    addMesh(body, new THREE.SphereGeometry(0.32, 7, 5), creamMat, 0, -0.06, 0.22).scale.set(0.72, 0.7, 0.62);
+    const head = new THREE.Group(); head.position.set(0, 1.52, 0.3); root.add(head); parts.head = head;
+    addMesh(head, new THREE.SphereGeometry(0.32, 8, 6), bodyMat, 0, 0, 0).scale.set(0.95, 0.9, 1);
+    const beak = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.34, 4), glowMat(0xffcf7d, 1.8));
+    beak.position.set(0, -0.02, 0.38); beak.rotation.x = Math.PI / 2; head.add(beak);
+    for (const side of [-1, 1]) makeEye(head, side * 0.15, 0.07, 0.27, 0xf5ffe0, 0.045);
+    const crest = addMesh(head, new THREE.ConeGeometry(0.1, 0.42, 4), accentMat, 0, 0.28, -0.05);
+    crest.rotation.z = 0.18;
+    for (const side of [-1, 1]) {
+      const wing = new THREE.Group(); wing.position.set(side * 0.33, 1.1, -0.02);
+      const shape = new THREE.BufferGeometry();
+      shape.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, side * 1.5, 0.18, -0.14, side * 1.12, -0.36, 0.34, 0, -0.05, 0.08], 3));
+      shape.setIndex([0, 1, 2, 0, 2, 3]); shape.computeVertexNormals();
+      addMesh(wing, shape, std(0x74b48a, { side: THREE.DoubleSide, roughness: 0.9 }), 0, 0, 0).castShadow = true;
+      for (let i = 0; i < 3; i++) addMesh(wing, new THREE.ConeGeometry(0.04, 0.6, 3), accentMat, side * (0.45 + i * 0.28), -0.16, 0).rotation.z = side * -1.15;
+      root.add(wing); parts['wing' + side] = wing;
+    }
+    const tail = new THREE.Group(); tail.position.set(0, 0.95, -0.58); root.add(tail); parts.tail = tail;
+    for (let i = -1; i <= 1; i++) addMesh(tail, new THREE.ConeGeometry(0.09, 0.8, 3), i ? bodyMat : accentMat, i * 0.12, 0, -0.25).rotation.x = -1.35;
+    parts.anim = (t, speed) => {
+      root.position.y = Math.sin(t * 2.4) * 0.08;
+      parts['wing-1'].rotation.z = -0.15 + Math.sin(t * 5.1) * 0.5;
+      parts.wing1.rotation.z = 0.15 - Math.sin(t * 5.1) * 0.5;
+      head.rotation.y = Math.sin(t * 0.8) * 0.15;
+      tail.rotation.x = Math.sin(t * 2.2) * 0.08;
+    };
+  } else if (key === 'frostkit') {
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.46, 9, 7), bodyMat);
+    body.position.y = 0.66; body.scale.set(0.82, 0.84, 1.26); body.castShadow = true; root.add(body);
+    addMesh(body, new THREE.SphereGeometry(0.32, 7, 5), creamMat, 0, -0.04, 0.2).scale.set(0.74, 0.7, 0.72);
+    const head = new THREE.Group(); head.position.set(0, 1.02, 0.48); root.add(head); parts.head = head;
+    addMesh(head, new THREE.SphereGeometry(0.33, 8, 6), bodyMat, 0, 0, 0).scale.set(1, 0.94, 0.96);
+    addMesh(head, new THREE.SphereGeometry(0.1, 5, 4), std(0xdff8ff), 0, -0.1, 0.31);
+    for (const side of [-1, 1]) {
+      makeEye(head, side * 0.14, 0.05, 0.29, 0xffffff, 0.048);
+      const ear = new THREE.Group(); ear.position.set(side * 0.16, 0.24, -0.03);
+      addMesh(ear, new THREE.ConeGeometry(0.14, 0.85, 4), bodyMat, 0, 0.38, 0).scale.set(1, 1, 0.55);
+      addMesh(ear, new THREE.ConeGeometry(0.07, 0.6, 4), std(0xd8f7ff), 0, 0.34, 0.03).scale.set(1, 1, 0.4);
+      ear.rotation.z = side * -0.18; head.add(ear); parts['ear' + side] = ear;
+      const leg = new THREE.Group(); leg.position.set(side * 0.26, 0.4, side * 0.18);
+      addMesh(leg, new THREE.CylinderGeometry(0.07, 0.1, 0.4, 5), darkMat, 0, -0.14, 0);
+      root.add(leg); parts['leg' + side] = leg;
+    }
+    const tail = addMesh(root, new THREE.SphereGeometry(0.22, 7, 5), std(0xe8ffff), 0, 0.62, -0.66);
+    tail.scale.set(0.9, 0.8, 0.9); parts.tail = tail;
+    const crystals = new THREE.Group(); root.add(crystals); parts.crystals = crystals;
+    for (let i = 0; i < 4; i++) {
+      const crystal = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.5, 4), glowMat(0xc8f4ff, 1.5));
+      crystal.position.set(wr(-0.42, 0.42), 0.95 + wr(0, 0.25), wr(-0.6, 0.1));
+      crystal.rotation.set(wr(-0.5, 0.5), wr(0, TAU), wr(-0.5, 0.5)); crystals.add(crystal);
+    }
+    parts.anim = (t, speed) => {
+      root.position.y = Math.abs(Math.sin(t * 2.8)) * 0.05;
+      head.rotation.y = Math.sin(t * 0.8) * 0.12;
+      parts['ear-1'].rotation.z = -0.18 + Math.sin(t * 2.2) * 0.1;
+      parts.ear1.rotation.z = 0.18 - Math.sin(t * 2.2) * 0.1;
+      crystals.rotation.y = t * 0.8;
+    };
+  } else if (key === 'lumoth') {
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.42, 9, 7), bodyMat);
+    body.position.y = 1.18; body.scale.set(0.68, 1.08, 0.82); body.castShadow = true; root.add(body);
+    const head = new THREE.Group(); head.position.set(0, 1.72, 0.05); root.add(head); parts.head = head;
+    addMesh(head, new THREE.SphereGeometry(0.3, 8, 6), bodyMat, 0, 0, 0).scale.set(1, 0.9, 0.95);
+    for (const side of [-1, 1]) {
+      makeEye(head, side * 0.15, 0.02, 0.25, 0xfff7d6, 0.075);
+      const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.55, 3), accentMat);
+      antenna.position.set(side * 0.18, 0.38, 0.02); antenna.rotation.z = side * -0.35; antenna.rotation.x = 0.2; head.add(antenna);
+      const tip = new THREE.Mesh(new THREE.SphereGeometry(0.045, 5, 4), glowMat(0xfff5b8, 3));
+      tip.position.set(side * 0.28, 0.64, 0.12); head.add(tip);
+    }
+    const wings = [];
+    for (const side of [-1, 1]) {
+      for (let row = 0; row < 2; row++) {
+        const wing = new THREE.Group(); wing.position.set(side * 0.28, 1.3 - row * 0.35, 0);
+        const geo = new THREE.BufferGeometry();
+        const spread = row ? 1.05 : 1.45;
+        geo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, side * spread, 0.35 + row * 0.15, -0.25, side * (spread - 0.2), -0.22, 0.3, 0, -0.06, 0.05], 3));
+        geo.setIndex([0, 1, 2, 0, 2, 3]); geo.computeVertexNormals();
+        const mat = new THREE.MeshBasicMaterial({ color: row ? 0xffc46b : 0xfff0b8, transparent: true, opacity: row ? 0.28 : 0.42, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false });
+        const mesh = new THREE.Mesh(geo, mat); wing.add(mesh);
+        const vein = addMesh(wing, new THREE.CylinderGeometry(0.012, 0.012, spread, 3), glowMat(0xfff5b8, 1.6), side * spread * 0.45, 0.12, -0.05);
+        vein.rotation.z = Math.PI / 2 + side * -0.2; root.add(wing); wings.push({ wing, side, row });
+      }
+    }
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0xffe8a0, transparent: true, opacity: 0.65, blending: THREE.AdditiveBlending, depthWrite: false }));
+    glow.position.y = 1.3; glow.scale.set(2.4, 2.4, 1); root.add(glow);
+    const dust = new THREE.Group(); root.add(dust); parts.dust = dust;
+    for (let i = 0; i < 8; i++) {
+      const mote = new THREE.Mesh(new THREE.SphereGeometry(0.03, 4, 3), glowMat(0xfff5b8, 3));
+      mote.position.set(wr(-0.7, 0.7), 0.8 + wr(0, 1.2), wr(-0.5, 0.5)); dust.add(mote);
+    }
+    parts.anim = (t, speed) => {
+      root.position.y = Math.sin(t * 2.1) * 0.1;
+      for (const w of wings) w.wing.rotation.z = w.side * (w.row ? 0.22 : 0.35) + Math.sin(t * 4.4 + w.row) * w.side * 0.35;
+      head.rotation.y = Math.sin(t * 0.7) * 0.2;
+      dust.rotation.y = t * 1.6;
+      glow.material.opacity = 0.55 + Math.sin(t * 2.2) * 0.12;
+    };
   }
+  // every Anima gets a faint elemental crest so species read at a distance
+  const crestColor = def.accent;
+  const crestGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: crestColor, transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false }));
+  crestGlow.position.y = 1.9; crestGlow.scale.set(1.6, 1.6, 1); root.add(crestGlow);
+  parts.crestGlow = crestGlow;
+  const baseAnim = parts.anim;
+  parts.anim = (t, speed) => {
+    if (baseAnim) baseAnim(t, speed);
+    crestGlow.material.opacity = 0.2 + Math.sin(t * 1.8 + (def.dex || 0)) * 0.08;
+    crestGlow.scale.setScalar(1.4 + Math.sin(t * 1.2) * 0.2);
+  };
   root.scale.setScalar(def.scale);
   parts.root = root; parts.def = def;
   return { group: root, parts, anim: parts.anim };
@@ -1315,10 +1568,10 @@ const viewWeaponModels = weaponTypes.map(type => {
 });
 
 const WEAPONS = [
-  { id: 'vx9', name: 'VX-9 HAVOC', klass: 'ASSAULT RIFLE', mode: 'AUTO', auto: true, magSize: 30, reserveMax: 210, damage: 14, head: 1.8, rpm: 690, reload: 1.8, spreadHip: 0.018, spreadAds: 0.0035, pellets: 1, range: 175, recoil: 0.008, color: 0xc8f36a, muzzle: 0.9 },
-  { id: 'manticore', name: 'MANTICORE-12', klass: 'BREACH SHOTGUN', mode: 'PUMP', auto: false, magSize: 6, reserveMax: 48, damage: 9, head: 1.35, rpm: 82, reload: 2.25, spreadHip: 0.065, spreadAds: 0.043, pellets: 9, range: 62, recoil: 0.032, color: 0xffb56b, muzzle: 0.6 },
-  { id: 'sidewinder', name: 'SIDEWINDER .45', klass: 'SIDEARM', mode: 'SEMI', auto: false, magSize: 14, reserveMax: 112, damage: 28, head: 2.3, rpm: 340, reload: 1.5, spreadHip: 0.009, spreadAds: 0.0018, pellets: 1, range: 145, recoil: 0.014, color: 0x79d9e3, muzzle: 0.42 },
-  { id: 'cleaver', name: 'RIFT CLEAVER', klass: 'MELEE', mode: 'MELEE', auto: false, magSize: 1, reserveMax: 1, damage: 62, head: 1.2, rpm: 115, reload: 0, spreadHip: 0, spreadAds: 0, pellets: 1, range: 3.2, recoil: 0.02, color: 0xff875f, muzzle: 0.3 }
+  { id: 'vx9', name: 'VX-9 HAVOC', klass: 'ASSAULT RIFLE', mode: 'AUTO', element: 'KINETIC', auto: true, magSize: 30, reserveMax: 210, damage: 14, head: 1.8, rpm: 690, reload: 1.8, spreadHip: 0.018, spreadAds: 0.0035, pellets: 1, range: 175, recoil: 0.008, color: 0xc8f36a, muzzle: 0.9 },
+  { id: 'manticore', name: 'MANTICORE-12', klass: 'BREACH SHOTGUN', mode: 'PUMP', element: 'EMBER', auto: false, magSize: 6, reserveMax: 48, damage: 9, head: 1.35, rpm: 82, reload: 2.25, spreadHip: 0.065, spreadAds: 0.043, pellets: 9, range: 62, recoil: 0.032, color: 0xffb56b, muzzle: 0.6 },
+  { id: 'sidewinder', name: 'SIDEWINDER .45', klass: 'SIDEARM', mode: 'SEMI', element: 'VOLT', auto: false, magSize: 14, reserveMax: 112, damage: 28, head: 2.3, rpm: 340, reload: 1.5, spreadHip: 0.009, spreadAds: 0.0018, pellets: 1, range: 145, recoil: 0.014, color: 0x79d9e3, muzzle: 0.42 },
+  { id: 'cleaver', name: 'RIFT CLEAVER', klass: 'MELEE', mode: 'MELEE', element: 'VOID', auto: false, magSize: 1, reserveMax: 1, damage: 62, head: 1.2, rpm: 115, reload: 0, spreadHip: 0, spreadAds: 0, pellets: 1, range: 3.2, recoil: 0.02, color: 0xff875f, muzzle: 0.3 }
 ];
 const weaponState = WEAPONS.map(w => ({ mag: w.magSize, reserve: w.reserveMax }));
 
@@ -1395,6 +1648,9 @@ let hollows = [];
 let boss = null;
 let team = [];
 let activeCompanionIndex = 0;
+let starterKey = null;
+const codex = new Set();
+const seen = new Set();
 let captureOrbs = [];
 let enemyShots = [];
 let friendlyShots = [];
@@ -1522,12 +1778,12 @@ function notice(kicker, title, copy) {
   clearTimeout(lastNotice);
   lastNotice = setTimeout(() => { n.hidden = true; }, 2800);
 }
-function showDamageNumber(worldPos, amount, critical = false) {
+function showDamageNumber(worldPos, amount, critical = false, kind = '') {
   if (!worldPos) return;
   const v = worldPos.clone().project(camera);
   if (v.z > 1 || v.z < -1) return;
   const el = document.createElement('div');
-  el.className = 'dmg-number' + (critical ? ' crit' : '');
+  el.className = 'dmg-number' + (critical ? ' crit' : '') + (kind ? ' ' + kind : '');
   el.textContent = Math.round(amount) + (critical ? '!' : '');
   el.style.left = `${(v.x * 0.5 + 0.5) * 100}%`;
   el.style.top = `${(-v.y * 0.5 + 0.5) * 100}%`;
@@ -1814,7 +2070,7 @@ function shootWeapon() {
     for (const a of targets) {
       const to = a.group.position.clone().add(new THREE.Vector3(0, 1, 0)).sub(playerEye());
       if (to.length() < 3.4 && to.normalize().dot(fwd) > 0.25) {
-        damageActor(a, spec.damage, a.group.position.clone().add(new THREE.Vector3(0, 1, 0)), false);
+        damageActor(a, spec.damage, a.group.position.clone().add(new THREE.Vector3(0, 1, 0)), false, spec.element);
         hitAny = true;
       }
     }
@@ -1861,8 +2117,8 @@ function shootWeapon() {
       if (actor) {
         const critical = hit.object.userData.part === 'head';
         let dmg = spec.damage * (critical ? spec.head : 1);
-        if (hit.object.userData.part === 'head') damageActor(actor, dmg, hit.point, true);
-        else damageActor(actor, dmg, hit.point, false);
+        if (hit.object.userData.part === 'head') damageActor(actor, dmg, hit.point, true, spec.element);
+        else damageActor(actor, dmg, hit.point, false, spec.element);
         didHit = true;
         break;
       }
@@ -1880,7 +2136,7 @@ function shootWeapon() {
   if (st.mag === 0) setTimeout(() => { if (state === 'playing') startReload(); }, 240);
   updateHUD(true);
 }
-function damageActor(actor, amount, point, critical = false) {
+function damageActor(actor, amount, point, critical = false, element = 'KINETIC') {
   if (!actor || actor.dead) return;
   if (actor.kind === 'boss' && !actor.active) {
     if (actor.shield) { actor.shield.material.opacity = 0.32; setTimeout(() => { if (actor.shield) actor.shield.material.opacity = 0.13; }, 80); }
@@ -1888,12 +2144,14 @@ function damageActor(actor, amount, point, critical = false) {
     tone(130, 0.12, 0.03, 'square', 0.5);
     return;
   }
+  const mult = typeMultiplier(element, actorElement(actor));
+  amount *= mult;
   quest.hits++;
   actor.hp -= amount;
   actor.flash = 0.11;
-  showDamageNumber(point || actor.group.position.clone().add(new THREE.Vector3(0, 1.4, 0)), amount, critical);
-  burst(point || actor.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), critical ? 0xffd06a : 0xeef5c4, critical ? 9 : 5, critical ? 3.4 : 2.2, 0.075);
-  hitmarker(critical);
+  showDamageNumber(point || actor.group.position.clone().add(new THREE.Vector3(0, 1.4, 0)), amount, critical, mult > 1.25 ? 'super' : mult < 0.9 ? 'resist' : '');
+  burst(point || actor.group.position.clone().add(new THREE.Vector3(0, 1.2, 0)), critical ? 0xffd06a : mult > 1.25 ? TYPE_INFO[element]?.color || 0xeef5c4 : 0xeef5c4, critical ? 9 : 5, critical ? 3.4 : 2.2, 0.075);
+  hitmarker(critical || mult > 1.25);
   sfx('hit');
   if (actor.kind === 'creature') {
     actor.aggro = true;
@@ -1919,7 +2177,7 @@ function killActor(actor) {
     if (Math.random() < 0.22) spawnPickup('ammo', pos.x - 0.4, pos.z + 0.4, 1);
     addFeed(`<b>ROOK</b> ↓ ${actor.def.name} <i>SHATTERED</i>`);
     respawns.push({ key: actor.key, x: actor.spawnX, z: actor.spawnZ, time: 50 });
-    if (activeCompanion()) activeCompanion().bond = Math.min(100, activeCompanion().bond + 3);
+    if (activeCompanion()) { activeCompanion().bond = Math.min(100, activeCompanion().bond + 3); grantCompanionXp(activeCompanion(), 26); }
     sfx('kill');
   } else if (actor.kind === 'hollow') {
     burst(pos, 0xff7b5f, 20, 3.6, 0.12);
@@ -1932,7 +2190,7 @@ function killActor(actor) {
     if (Math.random() < 0.25) spawnPickup('stim', pos.x - 0.5, pos.z - 0.2, 1);
     addFeed(`<b>ROOK</b> ↓ <i>HOLLOW STALKER</i>`);
     hollowRespawns.push({ x: actor.homeX, z: actor.homeZ, time: 55 });
-    if (activeCompanion()) activeCompanion().bond = Math.min(100, activeCompanion().bond + 5);
+    if (activeCompanion()) { activeCompanion().bond = Math.min(100, activeCompanion().bond + 5); grantCompanionXp(activeCompanion(), 36); }
     sfx('kill');
   } else if (actor.kind === 'boss') {
     burst(pos, 0xffb56b, 70, 7, 0.2);
@@ -1941,6 +2199,7 @@ function killActor(actor) {
     actor.group.visible = false;
     actor.dead = true;
     quest.wardenDead = true;
+    if (activeCompanion()) grantCompanionXp(activeCompanion(), 180);
     quest.shards += 1200;
     spawnPickup('shards', pos.x, pos.z, 500);
     spawnPickup('orb', pos.x + 1.2, pos.z, 2);
@@ -2087,27 +2346,51 @@ function tryBind() {
   toast(`PRISM ORB AWAY — BINDING ${target.def.name}`, 'good');
   updateHUD(true);
 }
-function captureCreature(actor) {
-  if (!actor || actor.dead) return;
-  const def = actor.def;
-  scene.remove(actor.group);
-  creatures = creatures.filter(c => c !== actor);
-  const model = makeAnimaModel(actor.key);
+function makeCompanion(key, x, z, bond = 24, options = {}) {
+  const def = SPECIES[key];
+  if (!def) return null;
+  const model = makeAnimaModel(key);
   const group = model.group;
   group.scale.multiplyScalar(0.82);
-  group.position.copy(actor.group.position);
+  group.position.set(x, groundAt(x, z) + def.hover, z);
   shadowlessAddCompanion(group);
   const companion = {
-    key: actor.key, def, model, group, bond: 24, level: def.level,
+    key, def, model, group, bond, level: options.level || def.level,
+    xp: 0, xpNeeded: 46 + (options.level || def.level) * 8, evolved: false,
     attackTimer: rnd(1.2, 2.2), rallyTimer: 0, rallyTarget: null, petCooldown: 0,
-    phase: rnd(0, 6), spawnX: actor.spawnX, spawnZ: actor.spawnZ
+    phase: rnd(0, 6), spawnX: x, spawnZ: z
   };
   group.userData.companion = companion;
   team.push(companion);
   if (team.length === 1) activeCompanionIndex = 0;
   activeCompanionIndex = team.length - 1;
   updateTeamVisibility();
+  codex.add(key); seen.add(key);
   quest.binds = team.length;
+  return companion;
+}
+function grantStarter(key) {
+  const def = SPECIES[key];
+  if (!def) return null;
+  const c = makeCompanion(key, player.pos.x + 1.6, player.pos.z + 2.2, 55, { level: def.level + 1 });
+  if (!c) return null;
+  starterKey = key;
+  c.group.userData.aura.material.opacity = 0.4;
+  notice('STARTER BOND', def.name, `+ ${def.element} RESONANCE · PACK 1/3`);
+  toast(`${def.name} CHOSE YOU — PRESS T TO RALLY · H TO TAME · B FOR CODEX`, 'good');
+  sfx('capture');
+  burst(c.group.position.clone().add(new THREE.Vector3(0, 1, 0)), def.accent, 38, 5, 0.15);
+  ringPulse(c.group.position, def.accent, 5, 0.9);
+  return c;
+}
+function captureCreature(actor) {
+  if (!actor || actor.dead) return;
+  const def = actor.def;
+  scene.remove(actor.group);
+  creatures = creatures.filter(c => c !== actor);
+  const companion = makeCompanion(actor.key, actor.group.position.x, actor.group.position.z, 24, { level: def.level });
+  if (!companion) return;
+  const group = companion.group;
   captureSlow = 0.75;
   captureFlash();
   notice('BOND ESTABLISHED', def.name, `+ ${def.element} RESONANCE · PACK ${team.length}/3`);
@@ -2148,15 +2431,60 @@ function swapCompanion() {
   activeCompanionIndex = (activeCompanionIndex + 1) % team.length;
   updateTeamVisibility();
   const c = activeCompanion();
-  const p = player.pos.clone().add(forwardVector().multiplyScalar(-2.2)).add(rightVector().multiplyScalar(1.2));
+  const p = player.pos.clone().add(forwardVector().multiplyScalar(0.5)).add(rightVector().multiplyScalar(1.7));
   c.group.position.set(p.x, groundAt(p.x, p.z) + c.def.hover, p.z);
   toast(`ACTIVE ANIMA // ${c.def.name} · BOND ${Math.round(c.bond)}%`, 'good');
   tone(520, 0.14, 0.03, 'sine', 1.4);
   updateHUD(true);
 }
+function grantCompanionXp(c, xp) {
+  if (!c || c.evolved) return;
+  c.xp += xp;
+  while (c.xp >= c.xpNeeded) {
+    c.xp -= c.xpNeeded;
+    c.level++;
+    c.xpNeeded = 40 + c.level * 10;
+    toast(`${c.def.name} REACHED LV ${c.level} — ANIMA RESONANCE RISING`, 'good');
+    burst(c.group.position.clone().add(new THREE.Vector3(0, 1.4, 0)), c.def.accent, 14, 3, 0.1);
+    tone(420 + c.level * 20, 0.16, 0.03, 'triangle', 1.5);
+  }
+  maybeEvolve(c);
+}
+function maybeEvolve(c) {
+  if (!c || c.evolved) return;
+  if (c.bond >= 90 && c.level >= (c.def.evolveAt || 99)) evolveCompanion(c);
+}
+function evolveCompanion(c) {
+  if (!c || c.evolved) return;
+  const oldName = c.def.name;
+  const evoName = c.def.evolve || (oldName + ' PRIME');
+  c.evolved = true;
+  c.def = {
+    ...c.def,
+    name: evoName,
+    kind: 'EVOLVED ' + c.def.kind,
+    hp: Math.round(c.def.hp * 1.38),
+    damage: Math.round(c.def.damage * 1.4),
+    scale: c.def.scale * 1.16,
+    move: 'APEX ' + (c.def.move || 'STRIKE')
+  };
+  c.bond = Math.min(100, c.bond + 8);
+  c.group.scale.multiplyScalar(1.16);
+  c.group.userData.aura.material.color.setHex(0xfff5b8);
+  c.group.userData.aura.material.opacity = 0.5;
+  const pos = c.group.position.clone().add(new THREE.Vector3(0, 1.5, 0));
+  burst(pos, 0xfff5b8, 48, 5.5, 0.16);
+  ringPulse(c.group.position, c.def.accent, 7, 1);
+  captureFlash();
+  notice('EVOLUTION', `${oldName} → ${evoName}`, `${c.def.element} RESONANCE · ${c.def.move}`);
+  toast(`${c.def.name} EVOLVED — APEX ATTACKS ONLINE`, 'good');
+  sfx('capture');
+  lastPackKey = '';
+  updateHUD(true);
+}
 function petCompanion() {
   const c = activeCompanion();
-  if (!c) { toast('BIND AN ANIMA FIRST', 'warn'); return; }
+  if (!c) { toast('BIND AN ANIMA FIRST (OR CHOOSE A STARTER)', 'warn'); return; }
   const d = Math.hypot(c.group.position.x - player.pos.x, c.group.position.z - player.pos.z);
   if (d > 7) { toast('GET CLOSER TO YOUR ANIMA TO TAME IT', 'warn'); return; }
   if (c.petCooldown > 0) return;
@@ -2166,6 +2494,8 @@ function petCompanion() {
   const pos = c.group.position.clone().add(new THREE.Vector3(0, 1.5, 0));
   burst(pos, 0xffb5c8, 8, 2.2, 0.09);
   tone(600 + c.bond * 3, 0.16, 0.03, 'sine', 1.4);
+  grantCompanionXp(c, 14);
+  maybeEvolve(c);
   toast(`${c.def.name} BOND ${Math.round(c.bond)}%${c.bond >= 100 ? ' · FULLY TAMED' : ''}`, 'good');
   updateHUD(true);
 }
@@ -2283,6 +2613,7 @@ function updateCreature(a, dt) {
   const toPlayer = new THREE.Vector3(player.pos.x - pos.x, 0, player.pos.z - pos.z);
   const dist = toPlayer.length() || 0.001;
   const dirToPlayer = toPlayer.clone().divideScalar(dist);
+  if (dist < 42) seen.add(a.key);
   if (!a.aggro && dist < a.def.aggro) a.aggro = true;
   if (a.aggro && dist > 48) a.aggro = false;
   a.attackTimer -= dt;
@@ -2485,7 +2816,7 @@ function updateCompanion(dt) {
   if (c.rallyTarget && !c.rallyTarget.dead && c.rallyTimer > 0) {
     targetPos = c.rallyTarget.group.position.clone().add(new THREE.Vector3(0, 0, 4));
   } else {
-    targetPos = player.pos.clone().add(forwardVector().multiplyScalar(-2.4)).add(rightVector().multiplyScalar(-1.25));
+    targetPos = player.pos.clone().add(forwardVector().multiplyScalar(0.5)).add(rightVector().multiplyScalar(1.7));
   }
   const d = pos.distanceTo(targetPos);
   if (d > 26) {
@@ -2534,7 +2865,7 @@ function updateCompanion(dt) {
       spr.scale.set(1.4, 1.4, 1); mesh.add(spr);
       mesh.position.copy(start);
       scene.add(mesh);
-      friendlyShots.push({ mesh, target, life: 3, damage: 11 + c.bond * 0.08 + c.level * 0.8, color });
+      friendlyShots.push({ mesh, target, life: 3, damage: (11 + c.bond * 0.08 + c.level * 0.8) * (c.evolved ? 1.35 : 1), color, type: c.def.element, owner: c });
       tone(620 + c.level * 20, 0.08, 0.02, 'sine', 1.5);
     }
   }
@@ -2554,7 +2885,12 @@ function updateFriendlyShots(dt) {
     const move = dest.sub(s.mesh.position);
     const dist = move.length();
     if (dist < 0.7) {
-      damageActor(s.target, s.damage, dest, false);
+      const mult = typeMultiplier(s.type || 'KINETIC', actorElement(s.target));
+      damageActor(s.target, s.damage, dest, mult > 1.25, s.type);
+      if (s.owner) grantCompanionXp(s.owner, 4 + s.damage * 0.14);
+      if (mult > 1.25 && s.owner) {
+        addFeed(`<b>${s.owner.def.name}</b> · ${s.owner.def.move || s.type} <i>SUPER EFFECTIVE</i>`);
+      }
       scene.remove(s.mesh); friendlyShots.splice(i, 1); continue;
     }
     s.mesh.position.addScaledVector(move.normalize(), 30 * dt);
@@ -2826,13 +3162,20 @@ function updateTargetCard() {
   card.hidden = false;
   const isCreature = a.kind === 'creature';
   const isBoss = a.kind === 'boss';
-  $('targetType').textContent = isCreature ? `WILD ANIMA · ${a.def.element}` : isBoss ? 'RIFT WARDEN' : 'HOLLOW STALKER';
+  const element = actorElement(a);
+  const info = typeLine(element);
+  $('targetType').textContent = isCreature ? `WILD ANIMA · ${element}` : isBoss ? 'RIFT WARDEN · VOID' : 'HOLLOW STALKER · VOID';
   $('targetName').textContent = isCreature ? a.def.name : isBoss ? 'OSSuary' : 'HOLLOW STALKER';
   const dist = a.group.position.distanceTo(player.pos);
   $('targetDistance').textContent = `${Math.round(dist)}M`;
   const ratio = clamp(a.hp / a.maxHp, 0, 1);
   $('targetHealthBar').style.width = `${ratio * 100}%`;
   $('targetHpText').textContent = `${Math.ceil(a.hp)} / ${a.maxHp}`;
+  const elementEl = $('targetElement');
+  elementEl.textContent = element;
+  elementEl.style.color = info.color;
+  $('targetWeak').textContent = info.weak && info.weak !== 'NONE' ? `WEAK ${info.weak.replaceAll(' · ', '·')}` : 'NO WEAKNESS';
+  $('targetLevel').textContent = `L${a.level || a.def?.level || '—'}`;
   card.classList.toggle('weakened', isCreature && a.weakened);
   card.classList.toggle('captured', false);
   if (isCreature) $('targetState').textContent = a.weakened ? 'BIND READY · F' : a.aggro ? 'AGGRO' : 'WILD';
@@ -2861,10 +3204,11 @@ function updatePackUI() {
     const el = document.createElement('div');
     el.className = 'pack-slot' + (c ? ' filled' : ' empty') + (i === activeCompanionIndex && c ? ' active' : '');
     if (c) {
-      el.innerHTML = `<span>0${i + 1}</span><b>${c.def.name}</b><div class="mini-bond"><i style="width:${c.bond}%"></i></div><i>${Math.round(c.bond)}%</i>`;
+      el.title = `${c.def.kind} · ${c.def.element} · ${c.def.move}${c.evolved ? ' · EVOLVED' : ` · EVOLVES TO ${c.def.evolve}`}`;
+      el.innerHTML = `<span>0${i + 1}</span><div class="pack-main"><b>${c.def.name}${c.evolved ? ' ✦' : ''}</b><small>${c.def.element} · LV ${c.level} · ${Math.round(c.bond)}%</small></div><div class="mini-bond"><i style="width:${c.bond}%"></i></div>`;
       el.addEventListener('click', () => { if (team[i]) { activeCompanionIndex = i; updateTeamVisibility(); lastPackKey = ''; updateHUD(true); toast(`ACTIVE ANIMA // ${team[i].def.name}`, 'good'); } });
     } else {
-      el.innerHTML = `<span>0${i + 1}</span><b>EMPTY</b><i>NO SIGNAL</i>`;
+      el.innerHTML = `<span>0${i + 1}</span><div class="pack-main"><b>EMPTY</b><small>NO SIGNAL</small></div>`;
     }
     slots.appendChild(el);
   }
@@ -2897,7 +3241,7 @@ function updateHUD(force = false) {
     const spec = currentWeaponSpec();
     const st = weaponState[currentWeapon];
     $('weaponName').textContent = spec.name;
-    $('weaponClass').textContent = spec.klass;
+    $('weaponClass').textContent = `${spec.klass} · ${spec.element}`;
     $('fireMode').textContent = spec.mode;
     $('ammoMag').textContent = spec.id === 'cleaver' ? '∞' : st.mag;
     $('ammoReserve').textContent = spec.id === 'cleaver' ? '∞' : st.reserve;
@@ -2906,7 +3250,7 @@ function updateHUD(force = false) {
     document.querySelectorAll('.wslot').forEach((el, i) => el.classList.toggle('active', i === currentWeapon));
     $('cameraMode').textContent = ['FIRST PERSON', 'THIRD PERSON', 'SECOND PERSON'][cameraMode];
     $('orbIcon').style.opacity = player.orbs > 0 ? '1' : '0.35';
-    $('packAction').innerHTML = `<kbd>T</kbd> RALLY <kbd>H</kbd> TAME <kbd>V</kbd> SWAP`;
+    $('packAction').innerHTML = `<kbd>T</kbd> RALLY <kbd>H</kbd> TAME <kbd>V</kbd> SWAP <kbd>B</kbd> CODEX`;
     updateMission();
     updatePackUI();
     updateTargetCard();
@@ -3143,8 +3487,83 @@ function requestPointerLock() {
     if (p && p.catch) p.catch(() => {});
   } catch (err) { /* fallback aim remains available */ }
 }
-function startGame() {
+function showStarterSelect() {
   $('briefScreen').hidden = true;
+  $('starterScreen').hidden = false;
+  renderStarterGrid();
+  state = 'menu';
+}
+function renderStarterGrid() {
+  const grid = $('starterGrid');
+  grid.innerHTML = '';
+  for (const key of STARTER_KEYS) {
+    const d = SPECIES[key];
+    const info = typeLine(d.element);
+    const card = document.createElement('button');
+    card.className = 'starter-card';
+    card.style.setProperty('--type-color', info.color);
+    card.innerHTML = `
+      <span class="starter-pick">PICK ${String(d.dex).padStart(2, '0')}</span>
+      <span class="starter-emblem">${d.element.slice(0, 2)}</span>
+      <span class="starter-kicker">${d.element} TYPE · ${d.rarity}</span>
+      <h3>${d.name}</h3>
+      <span class="starter-kind">${d.kind} · LV ${d.level}</span>
+      <p class="starter-bio">${d.bio}</p>
+      <div class="starter-stats"><span>HP <b>${d.hp}</b></span><span>PWR <b>${d.damage}</b></span><span>EVO <b>${d.evolve}</b></span></div>`;
+    card.addEventListener('click', () => startGame(key));
+    grid.appendChild(card);
+  }
+}
+function renderCodex() {
+  const grid = $('codexGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const keys = Object.keys(SPECIES).sort((a, b) => SPECIES[a].dex - SPECIES[b].dex);
+  for (const key of keys) {
+    const d = SPECIES[key];
+    const info = typeLine(d.element);
+    const caught = codex.has(key);
+    const discovered = seen.has(key);
+    const card = document.createElement('article');
+    card.className = 'codex-card' + (discovered ? '' : ' locked');
+    card.style.setProperty('--type-color', info.color);
+    card.innerHTML = `
+      <span class="dex-no">#${String(d.dex).padStart(3, '0')} · ${caught ? 'BONDED' : discovered ? 'SEEN' : 'NO SIGNAL'}</span>
+      <div class="codex-emblem">${discovered ? d.element.slice(0, 2) : '?'}</div>
+      <h3>${discovered ? d.name : '???'}</h3>
+      <div class="codex-kind">${discovered ? `${d.kind} · LV ${d.level}` : 'UNCHARTED ANIMA'}</div>
+      <p>${discovered ? d.bio : 'Track this Anima in the wild to unlock its archive entry.'}</p>
+      <div class="codex-tags">
+        <span class="type">${discovered ? d.element : 'UNKNOWN'}</span>
+        <span>${discovered ? `${d.rarity}` : '—'}</span>
+        <span>${discovered ? `WEAK ${info.weak || '—'}` : 'WEAK ?'}</span>
+      </div>
+      <div class="codex-evo">${discovered ? `EVOLVES → ${d.evolve || '—'} · BOND 90 + LV ${d.evolveAt || '—'}` : 'EVOLUTION DATA LOCKED'}</div>`;
+    grid.appendChild(card);
+  }
+  $('codexCount').textContent = `${codex.size} / ${keys.length}`;
+}
+function openCodex() {
+  if (state !== 'playing') return;
+  state = 'codex';
+  $('codexScreen').hidden = false;
+  $('touchControls').hidden = true;
+  if (document.pointerLockElement) document.exitPointerLock();
+  renderCodex();
+}
+function closeCodex() {
+  if (state !== 'codex') return;
+  state = 'playing';
+  $('codexScreen').hidden = true;
+  $('touchControls').hidden = !isTouch;
+  last = performance.now();
+  updateHUD(true);
+  requestPointerLock();
+}
+function startGame(starter = starterKey) {
+  $('briefScreen').hidden = true;
+  $('starterScreen').hidden = true;
+  $('codexScreen').hidden = true;
   $('startScreen').classList.add('is-hidden');
   $('pauseScreen').hidden = true;
   $('resultScreen').hidden = true;
@@ -3155,6 +3574,7 @@ function startGame() {
   state = 'playing';
   lastMissionKey = ''; lastPackKey = ''; lastZone = ''; lastBossActive = false;
   resetGame();
+  if (starter && SPECIES[starter]) grantStarter(starter);
   updateWeaponVisuals();
   cameraTargetPos.copy(player.pos).add(new THREE.Vector3(0, 2.2, 4.2));
   playerGroup.visible = false;
@@ -3163,7 +3583,7 @@ function startGame() {
   drawCompass();
   if (!audioOn) setAudio(true);
   requestPointerLock();
-  toast('DEPLOYED TO VERDANT RIFT // FIND THE WILD SIGNAL', 'good');
+  toast('DEPLOYED TO VERDANT RIFT // SCAN THE WILD SIGNAL', 'good');
   setTimeout(() => { if (state === 'playing') requestPointerLock(); }, 80);
 }
 function pauseGame() {
@@ -3333,16 +3753,19 @@ window.addEventListener('keydown', (e) => {
     if (k === 't') rallyCompanion();
     if (k === 'h') petCompanion();
     if (k === 'v') swapCompanion();
+    if (k === 'b') openCodex();
     if (k === 'm') openMap();
     if (k === ' ') input.jump = true;
   } else if (state === 'paused') {
     if (k === 'escape' || k === 'p') resumeGame();
   } else if (state === 'map') {
     if (k === 'escape' || k === 'm') closeMap();
+  } else if (state === 'codex') {
+    if (k === 'b' || k === 'escape') closeCodex();
   } else if (state === 'dead') {
     if (k === 'enter') respawnPlayer();
   } else if (state === 'menu') {
-    if (k === 'enter') startGame();
+    if (k === 'enter') showStarterSelect();
   }
 });
 window.addEventListener('keyup', (e) => { keys.delete(e.key.toLowerCase()); });
@@ -3447,30 +3870,36 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && sta
   bindHold($('touchBind'), () => tryBind());
   bindHold($('touchCamera'), () => cycleCamera());
   bindHold($('touchInteract'), () => doInteract());
+  bindHold($('touchCodex'), () => openCodex());
+  $('touchCodex').addEventListener('click', () => { if (state === 'playing') openCodex(); });
   bindHold($('touchReload'), () => startReload());
 })();
 
 /* ---------------- UI button wiring ---------------- */
-$('startBtn').addEventListener('click', startGame);
-$('againBtn').addEventListener('click', startGame);
+$('startBtn').addEventListener('click', showStarterSelect);
+$('againBtn').addEventListener('click', () => startGame(starterKey || 'mossling'));
 $('resumeBtn').addEventListener('click', resumeGame);
 $('restartBtn').addEventListener('click', () => {
   $('pauseScreen').hidden = true;
-  startGame();
+  startGame(starterKey || 'mossling');
 });
 $('briefBtn').addEventListener('click', showBrief);
 $('briefClose').addEventListener('click', hideBrief);
-$('briefDeploy').addEventListener('click', () => { hideBrief(); startGame(); });
+$('briefDeploy').addEventListener('click', () => { hideBrief(); showStarterSelect(); });
 $('briefScreen').addEventListener('click', (e) => { if (e.target === $('briefScreen')) hideBrief(); });
+$('starterRandom').addEventListener('click', () => startGame(STARTER_KEYS[Math.floor(Math.random() * STARTER_KEYS.length)]));
 $('pauseBtn').addEventListener('click', togglePause);
 $('audioBtn').addEventListener('click', () => setAudio(!audioOn));
 $('mapBtn').addEventListener('click', openMap);
 $('mapClose').addEventListener('click', closeMap);
 $('orbBtn').addEventListener('click', tryBind);
+$('codexBtn').addEventListener('click', openCodex);
+$('codexClose').addEventListener('click', closeCodex);
+$('codexScreen').addEventListener('click', (e) => { if (e.target === $('codexScreen')) closeCodex(); });
 $('respawnBtn').addEventListener('click', respawnPlayer);
 $('wordmark').addEventListener('click', (e) => { e.preventDefault(); if (state === 'playing') pauseGame(); });
 document.querySelectorAll('.wslot').forEach((el, i) => el.addEventListener('click', () => switchWeapon(i)));
-$('resultScreen').addEventListener('click', (e) => { if (e.target === $('resultScreen') && state === 'result') startGame(); });
+$('resultScreen').addEventListener('click', (e) => { if (e.target === $('resultScreen') && state === 'result') startGame(starterKey || 'mossling'); });
 
 /* ---------------- resize ---------------- */
 function onResize() {
@@ -3585,7 +4014,7 @@ function animate(now) {
   } else if (state === 'menu') {
     updateCamera(rawDt);
     drawCompass();
-  } else if (state === 'paused' || state === 'map') {
+  } else if (state === 'paused' || state === 'map' || state === 'codex') {
     // frozen, but keep subtle world motion and post FX alive
   } else if (state === 'result') {
     const t = worldTime * 0.12;
@@ -3636,6 +4065,23 @@ window.__wildline = {
   get team() { return team; },
   get aimTarget() { return aimTarget; },
   start: startGame,
+  starter: grantStarter,
+  openCodex,
+  closeCodex,
+  codex: () => ({ caught: [...codex], seen: [...seen] }),
+  species: SPECIES,
+  typeMultiplier,
+  captureKey: (key) => {
+    const a = creatures.find(c => c.key === key);
+    if (a) captureCreature(a);
+    return !!a;
+  },
+  pet: petCompanion,
+  evolve: () => {
+    const c = activeCompanion();
+    if (c) { c.bond = 100; c.level = Math.max(c.level, c.def.evolveAt || c.level); maybeEvolve(c); }
+    return c ? c.def.name : null;
+  },
   pause: pauseGame,
   resume: resumeGame,
   teleport(x, z, yaw = 0) {
