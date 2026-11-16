@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#07060f">
+<meta name="description" content="NINE — climb 9,000 metres of a collapsing neon tower with nine lives.">
+<title>NINE — Nine Lives, Nine Skies</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0817'/%3E%3Ctext x='32' y='47' font-family='Georgia,serif' font-size='46' font-weight='bold' text-anchor='middle' fill='%23ffb26b'%3E9%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="game" aria-label="NINE, a vertical climbing game. Drag or use arrow keys to steer. The cat jumps automatically."></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <div id="hud" class="hud is-hidden" aria-hidden="true">
+    <div class="rail" aria-hidden="true">
+      <div class="rail-ticks"></div>
+      <div class="rail-fill" id="railFill"></div>
+      <div class="rail-dot" id="railDot"></div>
+    </div>
+    <div class="hud-top">
+      <div class="hud-left">
+        <div class="lives" id="lives"></div>
+        <div class="sector-chip" id="sectorChip">I · EMBER</div>
+      </div>
+      <div class="hud-controls">
+        <button type="button" id="pauseBtn" class="icon-btn" aria-label="Pause game">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4.2" height="14" rx="1.6"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.6"/></svg>
+        </button>
+        <button type="button" id="muteBtn" class="icon-btn" aria-label="Mute sound">
+          <svg class="ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.2h3.4L12.5 5v14L7.4 14.8H4Z"/><path class="wave" d="M15.5 8.6a4.6 4.6 0 0 1 0 6.8M18.3 6a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <svg class="ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.2h3.4L12.5 5v14L7.4 14.8H4Z"/><path d="m16 9 5 6m0-6-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="hud-right">
+        <div class="height"><span id="heightVal">0</span><em>m</em></div>
+        <div class="shards"><span class="gem" aria-hidden="true">◆</span><span id="shardVal">0</span></div>
+      </div>
+    </div>
+    <div class="hint-toast" id="hintToast">DRAG TO STEER · AUTO-JUMP</div>
+  </div>
+
+  <div class="banner" id="banner" role="status" aria-live="polite"></div>
+  <div class="score-float" id="scoreFloat" aria-live="polite"></div>
+
+  <section class="screen screen--menu" id="menu">
+    <div class="menu-copy">
+      <p class="eyebrow">NINE LIVES · NINE SKIES</p>
+      <h1 class="title">NINE</h1>
+      <p class="tagline">Climb 9,000 metres of a collapsing neon tower.</p>
+      <button type="button" class="play-btn" id="playBtn">Play</button>
+      <p class="hint">Drag or arrows to steer · auto-jump</p>
+    </div>
+    <div class="menu-foot">
+      <span>BEST <b id="menuBest">0 m</b></span>
+      <span class="dot" aria-hidden="true">·</span>
+      <span>9 LIVES</span>
+      <span class="dot" aria-hidden="true">·</span>
+      <span>9 SECTORS</span>
+    </div>
+  </section>
+
+  <section class="screen screen--panel is-hidden" id="pauseScr" aria-hidden="true">
+    <div class="panel">
+      <p class="eyebrow">PAUSED</p>
+      <h2>Take a breath.</h2>
+      <p class="muted">The tower can wait.</p>
+      <button type="button" class="play-btn" id="resumeBtn">Resume</button>
+      <p class="hint">P / ESC to resume</p>
+    </div>
+  </section>
+
+  <section class="screen screen--panel is-hidden" id="overScr" aria-hidden="true">
+    <div class="panel">
+      <p class="eyebrow" id="overKicker">RUN OVER</p>
+      <h2 id="overTitle">Out of lives.</h2>
+      <p class="muted" id="overSub">The tower keeps your highest mark.</p>
+      <div class="stats" id="stats"></div>
+      <button type="button" class="play-btn" id="retryBtn">Retry</button>
+      <p class="hint" id="overHint">R / ENTER to retry</p>
+    </div>
+  </section>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
