@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=5" />
+  <link rel="stylesheet" href="style.css?v=6" />
   <script type="importmap">
     {
       "imports": {
@@ -93,6 +93,7 @@
           <div class="intel-row"><span>HOSTILES</span><b id="enemyCount">0</b></div>
           <div class="intel-row"><span>SHARDS</span><b id="shardCount">0000</b></div>
           <div class="intel-row"><span>BINDS</span><b id="bindCount">0</b></div>
+          <button class="codex-btn" id="codexBtn"><span>ANIMA CODEX</span><b>B</b></button>
         </div>
         <div class="killfeed" id="killfeed"></div>
       </div>
@@ -104,7 +105,8 @@
         </div>
         <div class="target-card" id="targetCard" hidden>
           <div class="target-head"><span id="targetType">WILD ANIMA</span><b id="targetDistance">00M</b></div>
-          <div class="target-name" id="targetName">MOSS BYTE</div>
+          <div class="target-name" id="targetName">SPRIGBYTE</div>
+          <div class="target-tags"><span id="targetElement">NATURE</span><b id="targetWeak">WEAK TO EMBER</b><i id="targetLevel">LV 5</i></div>
           <div class="target-health"><i id="targetHealthBar"></i></div>
           <div class="target-foot"><span id="targetHpText">100 / 100</span><b id="targetState">HOSTILE</b></div>
         </div>
@@ -166,15 +168,15 @@
       <div class="hero-shade"></div>
       <div class="hero-grid"></div>
       <div class="menu-copy">
-        <div class="kicker"><span class="kicker-line"></span> OPEN WORLD CREATURE COMBAT <span class="kicker-badge">FIELD BUILD 1.0</span></div>
+        <div class="kicker"><span class="kicker-line"></span> OPEN WORLD CREATURE COMBAT <span class="kicker-badge">FIELD BUILD 1.1</span></div>
         <h1><span class="h-kicker">TAME THE WILD.</span>WILDLINE<br><span class="title-accent">BLOODRIFT</span></h1>
-        <p class="hero-copy">A living island. Five apex Anima. One trigger-happy ranger.<br><b>Weaken them. Bind them. Fight beside them.</b></p>
+        <p class="hero-copy">A living island. Ten Anima. Three starters. One trigger-happy ranger.<br><b>Weaken them. Bind them. Evolve them. Fight beside them.</b></p>
         <div class="hero-buttons">
           <button class="primary-btn" id="startBtn"><span>ENTER THE WILD</span><b>↗</b></button>
           <button class="ghost-btn" id="briefBtn"><span>FIELD BRIEF</span><b>?</b></button>
         </div>
         <div class="input-strip">
-          <span><kbd>WASD</kbd> MOVE</span><span><kbd>MOUSE</kbd> AIM</span><span><kbd>LMB</kbd> FIRE</span><span><kbd>F</kbd> BIND</span><span><kbd>C</kbd> CAMERA</span><span><kbd>M</kbd> MAP</span>
+          <span><kbd>WASD</kbd> MOVE</span><span><kbd>MOUSE</kbd> AIM</span><span><kbd>LMB</kbd> FIRE</span><span><kbd>F</kbd> BIND</span><span><kbd>C</kbd> CAMERA</span><span><kbd>B</kbd> CODEX</span><span><kbd>M</kbd> MAP</span>
         </div>
       </div>
 
@@ -189,14 +191,27 @@
           <div class="mode"><b>02</b><span>THIRD PERSON<i>OVERWATCH</i></span></div>
           <div class="mode"><b>03</b><span>SECOND PERSON<i>BOND SIGHT</i></span></div>
         </div>
-        <div class="side-note"><i class="live-dot"></i> LIVE WORLD · NO LOADING SCREENS</div>
+        <div class="side-note"><i class="live-dot"></i> 10 SPECIES · 3 STARTERS · LIVE WORLD</div>
       </aside>
 
       <div class="menu-bottom">
-        <div class="menu-stat"><span>ANIMA SPECIES</span><b>05</b></div>
+        <div class="menu-stat"><span>ANIMA SPECIES</span><b>10</b></div>
         <div class="menu-stat"><span>ISLAND SIZE</span><b>220 KM²</b></div>
         <div class="menu-stat"><span>RIFT THREAT</span><b class="danger">SEVERE</b></div>
         <div class="menu-bottom-note">AN ORIGINAL CREATURE-COMBAT FIELD TEST <span>/</span> NO TWO HUNTS ALIKE</div>
+      </div>
+    </section>
+
+    <section class="panel-overlay starter-overlay" id="starterScreen" hidden>
+      <div class="starter-panel">
+        <div class="panel-kicker">STARTER TRIAL // FIRST BOND PROTOCOL</div>
+        <h2>THREE EGGS.<br><span>ONE PARTNER.</span></h2>
+        <p class="starter-copy">Choose the Anima that will meet you at the gate. Each starter evolves through bond and battle, and each one changes how you approach the island.</p>
+        <div class="starter-grid" id="starterGrid"></div>
+        <div class="starter-foot">
+          <span>STARTERS COUNT AS YOUR FIRST BOND · BIND TWO MORE TO WAKE THE WARDEN</span>
+          <button class="ghost-btn" id="starterRandom"><span>SURPRISE ME</span><b>↯</b></button>
+        </div>
       </div>
     </section>
 
@@ -217,13 +232,13 @@
         <div class="panel-kicker">FIELD BRIEF // OPERATION WILDBOUND</div>
         <h2>MAKE THE ISLAND<br><span>FIGHT FOR YOU.</span></h2>
         <div class="brief-grid">
-          <article><span>01</span><h3>WEAKEN</h3><p>Wild Anima guard the rift. Put enough fire on them to break their guard, but don't kill what you came to tame.</p></article>
-          <article><span>02</span><h3>BIND</h3><p>Below 35% vitality an Anima becomes bindable. Aim, press <kbd>F</kbd>, and throw a Prism Orb. Below 20% is a guaranteed bond.</p></article>
-          <article><span>03</span><h3>FIGHT TOGETHER</h3><p>Your bonded pack follows you into every fight. Press <kbd>T</kbd> to rally them and <kbd>H</kbd> to strengthen the bond.</p></article>
-          <article><span>04</span><h3>BREAK THE WARDEN</h3><p>Bind three Anima to shatter the gate seal. Defeat the Rift Warden, then interact with the gate to close the breach.</p></article>
+          <article><span>01</span><h3>CHOOSE &amp; WEAKEN</h3><p>Pick a Nature, Ember, or Aqua starter, then hunt wild Anima. Put enough fire on them to break their guard without killing what you came to tame.</p></article>
+          <article><span>02</span><h3>BIND</h3><p>Below 35% vitality an Anima becomes bindable. Aim, press <kbd>F</kbd>, and throw a Prism Orb. Below 20% is a guaranteed bond. Every species has a type, weakness, and evolution.</p></article>
+          <article><span>03</span><h3>FIGHT &amp; EVOLVE</h3><p>Your pack follows you into every fight. Press <kbd>T</kbd> to rally and <kbd>H</kbd> to tame. Raise bond and level to trigger evolution, then open the <kbd>B</kbd> codex to track all ten species.</p></article>
+          <article><span>04</span><h3>BREAK THE WARDEN</h3><p>Bind three Anima to shatter the gate seal. Bring the right elemental weapon or companion, defeat the Rift Warden, then interact with the gate to close the breach.</p></article>
         </div>
         <div class="brief-controls">
-          <span><kbd>1–4</kbd> WEAPONS</span><span><kbd>RMB</kbd> ADS</span><span><kbd>R</kbd> RELOAD</span><span><kbd>Q</kbd> STIM</span><span><kbd>C</kbd> CAMERA</span><span><kbd>M</kbd> MAP</span><span><kbd>ESC</kbd> PAUSE</span>
+          <span><kbd>1–4</kbd> WEAPONS</span><span><kbd>RMB</kbd> ADS</span><span><kbd>R</kbd> RELOAD</span><span><kbd>Q</kbd> STIM</span><span><kbd>C</kbd> CAMERA</span><span><kbd>B</kbd> CODEX</span><span><kbd>M</kbd> MAP</span><span><kbd>ESC</kbd> PAUSE</span>
         </div>
         <button class="primary-btn" id="briefDeploy"><span>DEPLOY</span><b>↗</b></button>
       </div>
@@ -259,6 +274,18 @@
       </div>
     </section>
 
+    <section class="codex-overlay" id="codexScreen" hidden>
+      <div class="codex-panel">
+        <div class="codex-head">
+          <div><span class="panel-kicker">BOND ARCHIVE // SPECIES CODEX</span><h2>THE TEN<br><span>ANIMA.</span></h2></div>
+          <div class="codex-progress"><b id="codexCount">0 / 10</b><span>SPECIES BONDED</span></div>
+          <button class="close-btn" id="codexClose">×</button>
+        </div>
+        <div class="codex-grid" id="codexGrid"></div>
+        <div class="codex-foot"><span>TYPE ADVANTAGE DEALS 1.55× DAMAGE · RESISTANCE TAKES 0.7×</span><span><kbd>B</kbd> CLOSE CODEX</span></div>
+      </div>
+    </section>
+
     <section class="touch-controls" id="touchControls" hidden aria-label="Touch controls">
       <div class="touch-stick" id="touchStick"><i></i><span>MOVE</span></div>
       <div class="touch-look" id="touchLook"><span>DRAG TO LOOK</span></div>
@@ -267,12 +294,13 @@
       <button class="touch-btn bind" id="touchBind">F</button>
       <button class="touch-btn camera" id="touchCamera">C</button>
       <button class="touch-btn interact" id="touchInteract">E</button>
+      <button class="touch-btn codex" id="touchCodex">B</button>
       <button class="touch-btn reload" id="touchReload">R</button>
     </section>
 
     <div class="lock-hint" id="lockHint" hidden><span>CLICK TO CAPTURE MOUSE</span><b>ESC TO RELEASE</b></div>
   </main>
 
-  <script type="module" src="game.js?v=5"></script>
+  <script type="module" src="game.js?v=6"></script>
 </body>
 </html>
